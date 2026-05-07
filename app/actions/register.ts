@@ -48,7 +48,7 @@ export async function registerStudent(
   if (!phone) {
     errors.phone = '電話番号を入力してください'
   } else if (!/^0\d{9,10}$/.test(phone)) {
-    errors.phone = '正しい電話番号を入力してください（例: 090-1234-5678）'
+    errors.phone = '正しい携帯番号を入力してください（例: 09012345678）'
   }
 
   // 所属寮
@@ -73,12 +73,6 @@ export async function registerStudent(
     const birth = new Date(birthDate)
     if (isNaN(birth.getTime())) {
       errors.birth_date = '正しい日付を入力してください'
-    } else {
-      const ageYears =
-        (Date.now() - birth.getTime()) / (1000 * 60 * 60 * 24 * 365.25)
-      if (ageYears < 10 || ageYears > 30) {
-        errors.birth_date = '正しい生年月日を入力してください'
-      }
     }
   }
 

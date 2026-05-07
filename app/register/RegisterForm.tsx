@@ -151,12 +151,6 @@ export default function RegisterForm() {
           name="birth_date"
           type="date"
           required
-          max={new Date(Date.now() - 10 * 365.25 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split('T')[0]}
-          min={new Date(Date.now() - 30 * 365.25 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split('T')[0]}
           className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors ${
             state?.errors?.birth_date
               ? 'border-red-400 focus:ring-red-400'
