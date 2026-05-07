@@ -159,82 +159,86 @@ export default function StudentEditForm({
             error={state?.errors?.phone}
           />
 
-          <div>
-            <label htmlFor="dormitory" className="block text-sm font-medium text-gray-700 mb-1">
-              所属寮<span className="text-red-500 ml-0.5">*</span>
-            </label>
-            <select
-              id="dormitory"
-              name="dormitory"
-              required
-              defaultValue={student.dormitory}
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                state?.errors?.dormitory
-                  ? 'border-red-400 focus:ring-red-400'
-                  : 'border-gray-300 focus:ring-blue-500'
-              }`}
-            >
-              <option value="男子寮">男子寮</option>
-              <option value="女子寮">女子寮</option>
-            </select>
-            {state?.errors?.dormitory && (
-              <p className="mt-1 text-xs text-red-600">{state.errors.dormitory}</p>
-            )}
-          </div>
+          {!studentRole && (
+            <>
+              <div>
+                <label htmlFor="dormitory" className="block text-sm font-medium text-gray-700 mb-1">
+                  所属寮<span className="text-red-500 ml-0.5">*</span>
+                </label>
+                <select
+                  id="dormitory"
+                  name="dormitory"
+                  required
+                  defaultValue={student.dormitory}
+                  className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
+                    state?.errors?.dormitory
+                      ? 'border-red-400 focus:ring-red-400'
+                      : 'border-gray-300 focus:ring-blue-500'
+                  }`}
+                >
+                  <option value="男子寮">男子寮</option>
+                  <option value="女子寮">女子寮</option>
+                </select>
+                {state?.errors?.dormitory && (
+                  <p className="mt-1 text-xs text-red-600">{state.errors.dormitory}</p>
+                )}
+              </div>
 
-          <div>
-            <label htmlFor="enrollment_year" className="block text-sm font-medium text-gray-700 mb-1">
-              入学年度<span className="text-red-500 ml-0.5">*</span>
-            </label>
-            <select
-              id="enrollment_year"
-              name="enrollment_year"
-              required
-              defaultValue={student.enrollment_year}
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                state?.errors?.enrollment_year
-                  ? 'border-red-400 focus:ring-red-400'
-                  : 'border-gray-300 focus:ring-blue-500'
-              }`}
-            >
-              {enrollmentYears.map(y => (
-                <option key={y} value={y}>{y}年度</option>
-              ))}
-            </select>
-            {state?.errors?.enrollment_year && (
-              <p className="mt-1 text-xs text-red-600">{state.errors.enrollment_year}</p>
-            )}
-          </div>
+              <div>
+                <label htmlFor="enrollment_year" className="block text-sm font-medium text-gray-700 mb-1">
+                  入学年度<span className="text-red-500 ml-0.5">*</span>
+                </label>
+                <select
+                  id="enrollment_year"
+                  name="enrollment_year"
+                  required
+                  defaultValue={student.enrollment_year}
+                  className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
+                    state?.errors?.enrollment_year
+                      ? 'border-red-400 focus:ring-red-400'
+                      : 'border-gray-300 focus:ring-blue-500'
+                  }`}
+                >
+                  {enrollmentYears.map(y => (
+                    <option key={y} value={y}>{y}年度</option>
+                  ))}
+                </select>
+                {state?.errors?.enrollment_year && (
+                  <p className="mt-1 text-xs text-red-600">{state.errors.enrollment_year}</p>
+                )}
+              </div>
 
-          <div>
-            <label htmlFor="birth_date" className="block text-sm font-medium text-gray-700 mb-1">
-              生年月日<span className="text-red-500 ml-0.5">*</span>
-            </label>
-            <input
-              id="birth_date"
-              name="birth_date"
-              type="date"
-              required
-              defaultValue={student.birth_date}
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                state?.errors?.birth_date
-                  ? 'border-red-400 focus:ring-red-400'
-                  : 'border-gray-300 focus:ring-blue-500'
-              }`}
-            />
-            {state?.errors?.birth_date && (
-              <p className="mt-1 text-xs text-red-600">{state.errors.birth_date}</p>
-            )}
-          </div>
+              <div>
+                <label htmlFor="birth_date" className="block text-sm font-medium text-gray-700 mb-1">
+                  生年月日<span className="text-red-500 ml-0.5">*</span>
+                </label>
+                <input
+                  id="birth_date"
+                  name="birth_date"
+                  type="date"
+                  required
+                  defaultValue={student.birth_date}
+                  className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
+                    state?.errors?.birth_date
+                      ? 'border-red-400 focus:ring-red-400'
+                      : 'border-gray-300 focus:ring-blue-500'
+                  }`}
+                />
+                {state?.errors?.birth_date && (
+                  <p className="mt-1 text-xs text-red-600">{state.errors.birth_date}</p>
+                )}
+              </div>
 
-          <Field
-            label="部屋番号"
-            name="room_number"
-            defaultValue={student.room_number ?? ''}
-            placeholder="101"
-            required={false}
-            error={state?.errors?.room_number}
-          />
+              <Field
+                label="部屋番号"
+                name="room_number"
+                defaultValue={student.room_number ?? ''}
+                placeholder="101"
+                required={false}
+                error={state?.errors?.room_number}
+              />
+            </>
+          )}
         </div>
       </fieldset>
 

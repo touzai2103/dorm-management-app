@@ -103,18 +103,20 @@ export default async function StudentDetailPage({
             />
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
-              <span className="text-sm font-bold text-gray-700">食事申告（代理変更）</span>
-              <span className="text-xs text-gray-400 ml-2">締切済みの日付も変更できます</span>
+          {!studentRole && (
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+                <span className="text-sm font-bold text-gray-700">食事申告（代理変更）</span>
+                <span className="text-xs text-gray-400 ml-2">締切済みの日付も変更できます</span>
+              </div>
+              <AdminMealCalendar
+                studentId={student.id}
+                declarations={declarationMap}
+                today={today}
+                readOnly={isCurrentUserViewer}
+              />
             </div>
-            <AdminMealCalendar
-              studentId={student.id}
-              declarations={declarationMap}
-              today={today}
-              readOnly={isCurrentUserViewer}
-            />
-          </div>
+          )}
         </div>
       </div>
     </div>
