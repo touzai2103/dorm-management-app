@@ -29,3 +29,30 @@ input, select, textarea {
   color: #171717;
   background-color: #ffffff;
 }
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+@keyframes float-z {
+  0%   { transform: translateY(0px) rotate(-10deg); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translateY(-36px) rotate(15deg); opacity: 0; }
+}
+
+.animate-breathe {
+  animation: breathe 2.4s ease-in-out infinite;
+}
+
+.animate-float-z1 {
+  animation: float-z 2.4s ease-out infinite;
+}
+
+.animate-float-z2 {
+  animation: float-z 2.4s ease-out 0.8s infinite;
+}
+
+.animate-float-z3 {
+  animation: float-z 2.4s ease-out 1.6s infinite;
+}
