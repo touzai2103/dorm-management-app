@@ -99,27 +99,6 @@ export default async function AdminPage() {
       </header>
 
       <div className="p-4 space-y-6">
-        {dbAdminList.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
-              <span className="text-sm font-bold text-gray-700">管理者</span>
-            </div>
-            <ul className="divide-y divide-gray-100">
-              {dbAdminList.map(a => (
-                <li key={a.studentId} className="px-4 py-3 flex items-center justify-between">
-                  <span className="text-sm text-gray-800">{a.name}</span>
-                  <Link
-                    href={`/admin/students/${a.studentId}`}
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    権限を管理 →
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
         {Object.entries(dormGroups).map(([dormitory, dStudents]) => (
           <div key={dormitory} className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
@@ -205,6 +184,27 @@ export default async function AdminPage() {
             </div>
           </div>
         ))}
+
+        {dbAdminList.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+              <span className="text-sm font-bold text-gray-700">管理者</span>
+            </div>
+            <ul className="divide-y divide-gray-100">
+              {dbAdminList.map(a => (
+                <li key={a.studentId} className="px-4 py-3 flex items-center justify-between">
+                  <span className="text-sm text-gray-800">{a.name}</span>
+                  <Link
+                    href={`/admin/students/${a.studentId}`}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    権限を管理 →
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   )
