@@ -12,6 +12,7 @@ function Field({
   type = 'text',
   placeholder,
   inputMode,
+  hint,
   error,
   required = true,
 }: {
@@ -20,6 +21,7 @@ function Field({
   type?: string
   placeholder?: string
   inputMode?: React.InputHTMLAttributes<HTMLInputElement>['inputMode']
+  hint?: string
   error?: string
   required?: boolean
 }) {
@@ -29,6 +31,7 @@ function Field({
         {label}
         {required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
+      {hint && <p className="mb-1 text-xs text-gray-400">{hint}</p>}
       <input
         id={name}
         name={name}
@@ -59,6 +62,7 @@ export default function RegisterForm() {
         label="氏名"
         name="name"
         placeholder="山田 太郎"
+        hint="姓と名の間に半角スペースを入力してください"
         error={state?.errors?.name}
       />
       <Field
@@ -68,11 +72,12 @@ export default function RegisterForm() {
         error={state?.errors?.furigana}
       />
       <Field
-        label="電話番号"
+        label="携帯番号"
         name="phone"
         type="tel"
         inputMode="tel"
-        placeholder="090-1234-5678"
+        placeholder="09012345678"
+        hint="ハイフン不要"
         error={state?.errors?.phone}
       />
       <div>

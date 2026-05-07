@@ -3,6 +3,18 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import StudentEditForm from './StudentEditForm'
+import AdminMealCalendar from '@/app/components/AdminMealCalendar'
+
+function getJSTToday(): string {
+  const jst = new Date(Date.now() + 9 * 60 * 60 * 1000)
+  return jst.toISOString().split('T')[0]
+}
+
+function addDays(dateStr: string, days: number): string {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const date = new Date(Date.UTC(y, m - 1, d + days))
+  return date.toISOString().split('T')[0]
+}
 
 export default async function StudentDetailPage({
   params,
@@ -27,8 +39,11 @@ export default async function StudentDetailPage({
 
   if (!allAdminUids.includes(user.id)) redirect('/')
 
-  // 寮生情報 と authLink を並列取得
-  const [{ data: student }, { data: authLink }] = await Promise.all([
+  const today = getJSTToday()
+  const endDate = addDays(today, 14)
+
+  // 寮生情報・authLink・申告データ を並列取得
+  const [{ data: student }, { data: authLink }, { data: declarations }] = await Promise.all([
     adminClient
       .from('students')
       .select('id, name, furigana, phone, dormitory, enrollment_year, birth_date, room_number')
@@ -39,13 +54,23 @@ export default async function StudentDetailPage({
       .select('auth_uid')
       .eq('student_id', id)
       .maybeSingle(),
+    adminClient
+      .from('meal_declarations')
+      .select('date, breakfast, dinner')
+      .eq('student_id', id)
+      .gte('date', today)
+      .lte('date', endDate),
   ])
 
   if (!student) notFound()
 
   const hasAuthLink = !!authLink
-  // 取得済みの allAdminUids でローカル判定（追加DBクエリ不要）
   const isStudentAdmin = hasAuthLink ? allAdminUids.includes(authLink!.auth_uid) : false
+
+  const declarationMap: Record<string, { breakfast: boolean; dinner: boolean }> = {}
+  declarations?.forEach(d => {
+    declarationMap[d.date] = { breakfast: d.breakfast ?? false, dinner: d.dinner ?? false }
+  })
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -66,6 +91,18 @@ export default async function StudentDetailPage({
               student={student}
               hasAuthLink={hasAuthLink}
               isStudentAdmin={isStudentAdmin}
+            />
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+              <span className="text-sm font-bold text-gray-700">食事申告（代理変更）</span>
+              <span className="text-xs text-gray-400 ml-2">締切済みの日付も変更できます</span>
+            </div>
+            <AdminMealCalendar
+              studentId={student.id}
+              declarations={declarationMap}
+              today={today}
             />
           </div>
         </div>

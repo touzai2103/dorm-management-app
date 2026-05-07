@@ -181,3 +181,22 @@ export async function revokeAdmin(studentId: string): Promise<AdminGrantState> {
   revalidatePath(`/admin/students/${studentId}`)
   return { success: true }
 }
+
+export async function adminUpsertMealDeclaration(
+  studentId: string,
+  date: string,
+  breakfast: boolean,
+  dinner: boolean
+): Promise<void> {
+  if (!(await checkAdmin())) return
+
+  const admin = createAdminClient()
+  await admin.from('meal_declarations').upsert(
+    { student_id: studentId, date, breakfast, dinner, updated_at: new Date().toISOString() },
+    { onConflict: 'student_id,date' }
+  )
+
+  revalidatePath('/')
+  revalidatePath('/admin')
+  revalidatePath(`/admin/students/${studentId}`)
+}
