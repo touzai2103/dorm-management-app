@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "学生寮 食事申告アプリ",
-  description: "私の生活は誰かの仕事で成り立っています",
+  description: "私たちの生活は誰かの仕事で成り立っています",
 };
 
 export default function RootLayout({
