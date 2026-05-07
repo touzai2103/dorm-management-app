@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useActionState, useTransition, startTransition } from 'react'
+import { useState, useEffect, useActionState, useTransition } from 'react'
 import { updateStudent, deleteStudent, setAdminRole, type UpdateStudentState } from '@/app/actions/admin'
 
 const currentYear = new Date().getFullYear()
@@ -71,7 +71,7 @@ const ROLE_OPTIONS: { value: 'admin' | 'viewer' | null; label: string }[] = [
   { value: 'admin', label: '管理者' },
 ]
 
-export default function StudentEditForm({
+function StudentEditFormInner({
   student,
   hasAuthLink,
   studentRole,
@@ -119,7 +119,7 @@ export default function StudentEditForm({
     <form
       onSubmit={(e) => {
         e.preventDefault()
-        startTransition(() => action(new FormData(e.currentTarget)))
+        action(new FormData(e.currentTarget))
       }}
       className="space-y-4"
     >
@@ -301,4 +301,23 @@ export default function StudentEditForm({
       )}
     </form>
   )
+}
+
+export default function StudentEditForm(props: {
+  student: Student
+  hasAuthLink: boolean
+  studentRole: 'admin' | 'viewer' | null
+  isViewer: boolean
+}) {
+  const key = [
+    props.student.name,
+    props.student.furigana,
+    props.student.phone,
+    props.student.dormitory,
+    props.student.enrollment_year,
+    props.student.birth_date,
+    props.student.room_number,
+  ].join('|')
+
+  return <StudentEditFormInner key={key} {...props} />
 }
