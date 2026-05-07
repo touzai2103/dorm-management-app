@@ -91,15 +91,15 @@ export default async function AdminPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-20 flex items-center justify-between">
+    <div className="min-h-screen bg-[#a9b4ba]">
+      <header className="bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-20 flex items-center">
         <div className="flex items-center gap-2">
           <Image src="/logo.png" alt="ロゴ" width={28} height={28} />
           <h1 className="text-base font-bold text-gray-900">管理者画面</h1>
         </div>
         <a
           href="/api/admin/csv"
-          className="text-xs text-blue-600 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50 transition-colors"
+          className="ml-auto text-xs text-blue-600 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50 transition-colors"
         >
           CSV出力
         </a>
@@ -107,17 +107,17 @@ export default async function AdminPage() {
 
       <div className="p-4 space-y-6">
         {Object.entries(dormGroups).map(([dormitory, dStudents]) => (
-          <div key={dormitory} className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div key={dormitory} className="bg-[#ebe7df] rounded-xl shadow-sm overflow-hidden">
             <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
               <span className="text-sm font-bold text-gray-700">{dormitory}</span>
               <span className="text-xs text-gray-400 ml-2">{dStudents.length}人</span>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="text-xs border-collapse">
+              <table className="text-xs border-collapse w-full">
                 <thead>
                   <tr>
-                    <th className="sticky left-0 z-10 bg-gray-50 border-b border-r border-gray-100 px-3 py-2 text-left font-medium text-gray-500 min-w-[80px]">
+                    <th className="sticky left-0 z-10 bg-gray-50 border-b border-r border-gray-100 px-3 py-2 text-left font-medium text-gray-500 min-w-[80px] w-px">
                       氏名
                     </th>
                     {dates.map(date => {
@@ -164,7 +164,7 @@ export default async function AdminPage() {
                       <td className={`sticky left-0 z-10 border-r border-gray-100 px-3 py-2 font-medium text-gray-800 whitespace-nowrap ${
                         idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                       }`}>
-                        <Link href={`/admin/students/${s.id}`} className="hover:text-blue-600 hover:underline">
+                        <Link href={`/admin/students/${s.id}`} className="relative after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-0 after:bg-blue-500 after:transition-all after:duration-200 hover:text-blue-600 hover:after:w-full">
                           {s.name}
                         </Link>
                       </td>
@@ -193,7 +193,7 @@ export default async function AdminPage() {
         ))}
 
         {dbAdminList.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-[#ebe7df] rounded-xl shadow-sm overflow-hidden">
             <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
               <span className="text-sm font-bold text-gray-700">管理者</span>
             </div>

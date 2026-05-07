@@ -110,7 +110,7 @@ export default function MealCalendar({ studentId, declarations, today }: Props) 
         return (
           <div
             key={date}
-            className={`px-4 py-3 bg-white flex items-center gap-4 ${past ? 'opacity-50' : ''}`}
+            className={`px-4 py-3 bg-white flex items-center justify-between ${past ? 'opacity-50' : ''}`}
           >
             <div className="w-24 shrink-0">
               <div className="text-xl font-bold text-gray-900">
@@ -128,20 +128,18 @@ export default function MealCalendar({ studentId, declarations, today }: Props) 
                 )}
               </div>
             </div>
-            <div className="flex gap-8">
-              <Toggle
-                label="朝食"
-                value={decl.breakfast}
-                disabled={past}
-                onChange={() => handleToggle(date, 'breakfast')}
-              />
-              <Toggle
-                label="夕食"
-                value={decl.dinner}
-                disabled={past}
-                onChange={() => handleToggle(date, 'dinner')}
-              />
-            </div>
+            <Toggle
+              label="朝食"
+              value={decl.breakfast}
+              disabled={past}
+              onChange={() => handleToggle(date, 'breakfast')}
+            />
+            <Toggle
+              label="夕食"
+              value={decl.dinner}
+              disabled={past}
+              onChange={() => handleToggle(date, 'dinner')}
+            />
           </div>
         )
       })}

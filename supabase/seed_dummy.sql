@@ -99,10 +99,10 @@ INSERT INTO students (id, name, furigana, phone, dormitory, enrollment_year, bir
 (ids[39], '橋本 麻衣',   'はしもと まい',     '09022220019', '女子寮', 2024, '2008-12-19'),
 (ids[40], '阿部 瞳',     'あべ ひとみ',       '09022220020', '女子寮', 2023, '2007-08-05');
 
--- 食事申告: 今日〜7日後の8日分をランダムに挿入
+-- 食事申告: 今日〜14日後の15日分をランダムに挿入
 FOR i IN 1..40 LOOP
   FOR d IN
-    SELECT generate_series(CURRENT_DATE, CURRENT_DATE + 7, '1 day'::interval)::DATE
+    SELECT generate_series(CURRENT_DATE, CURRENT_DATE + 14, '1 day'::interval)::DATE
   LOOP
     INSERT INTO meal_declarations (student_id, date, breakfast, dinner, updated_at)
     VALUES (

@@ -51,8 +51,11 @@ export default async function StudentDetailPage({
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-lg mx-auto">
         <header className="bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-10 flex items-center gap-3">
-          <Link href="/admin" className="text-blue-600 text-sm hover:text-blue-700">
-            ← 一覧
+          <Link href="/admin" className="flex items-center gap-1 text-gray-400 hover:text-gray-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+              <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
+            </svg>
+            <span className="text-sm font-medium">一覧</span>
           </Link>
           <h1 className="text-base font-bold text-gray-900">{student.name}</h1>
           <span className="text-xs text-gray-400 ml-auto">{student.dormitory}</span>
