@@ -23,8 +23,6 @@ export default async function RegisterPage() {
         <h1 className="text-xl font-bold text-gray-900 mb-1">初回登録</h1>
         <p className="text-sm text-gray-500 mb-6">
           以下の情報を入力してください。
-          <br />
-          内容は後から管理者が確認します。
         </p>
         <RegisterForm />
       </div>

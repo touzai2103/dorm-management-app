@@ -48,4 +48,5 @@ export async function upsertMealDeclaration(
   }
 
   revalidatePath('/')
+  revalidatePath('/admin')
 }

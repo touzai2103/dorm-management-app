@@ -130,9 +130,9 @@ export default async function AdminPage() {
                             isWeekend ? 'text-blue-400' : 'text-gray-500'
                           }`}
                         >
-                          <div>{short}</div>
-                          <div>({dow})</div>
-                          <div className="flex justify-center gap-0.5 mt-1 text-gray-300 font-normal">
+                          <div className="font-bold text-sm">{short}</div>
+                          <div className="text-[10px]">({dow})</div>
+                          <div className="flex justify-center gap-0.5 mt-1 text-gray-400 font-normal">
                             <span>朝</span><span>|</span><span>夕</span>
                           </div>
                         </th>

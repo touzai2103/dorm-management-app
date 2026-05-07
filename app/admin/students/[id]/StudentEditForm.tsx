@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useActionState, useTransition } from 'react'
+import { useState, useEffect, useActionState, useTransition } from 'react'
 import { updateStudent, deleteStudent, grantAdmin, revokeAdmin, type UpdateStudentState } from '@/app/actions/admin'
 
 const currentYear = new Date().getFullYear()
@@ -78,6 +78,14 @@ export default function StudentEditForm({
   const [deleting, startDelete] = useTransition()
   const [adminPending, startAdmin] = useTransition()
   const [adminError, setAdminError] = useState<string | null>(null)
+  const [showSuccess, setShowSuccess] = useState(false)
+
+  useEffect(() => {
+    if (!state?.success) return
+    setShowSuccess(true)
+    const id = setTimeout(() => setShowSuccess(false), 3000)
+    return () => clearTimeout(id)
+  }, [state])
 
   function handleDelete() {
     if (!window.confirm(`「${student.name}」を削除しますか？\nこの操作は元に戻せません。`)) return
@@ -107,7 +115,7 @@ export default function StudentEditForm({
     <form action={action} className="space-y-4">
       <input type="hidden" name="student_id" value={student.id} />
 
-      {state?.success && (
+      {showSuccess && (
         <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-700">
           更新しました
         </div>

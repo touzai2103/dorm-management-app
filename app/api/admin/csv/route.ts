@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
+import { isAdmin } from '@/utils/isAdmin'
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土']
 
@@ -26,9 +27,7 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return new Response('Unauthorized', { status: 401 })
 
-  const adminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
-    .split(',').map(s => s.trim()).filter(Boolean)
-  if (!adminUids.includes(user.id)) return new Response('Forbidden', { status: 403 })
+  if (!(await isAdmin(user.id))) return new Response('Forbidden', { status: 403 })
 
   const today = getJSTToday()
   const dates = Array.from({ length: 15 }, (_, i) => addDays(today, i))

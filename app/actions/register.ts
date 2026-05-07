@@ -110,11 +110,17 @@ export async function registerStudent(
     return { errors: { name: '登録に失敗しました。もう一度お試しください。' } }
   }
 
-  await admin.from('student_auth_links').insert({
+  const { error: linkError } = await admin.from('student_auth_links').insert({
     student_id: student.id,
     auth_uid: user.id,
     provider: (user.user_metadata?.provider as string) ?? 'line',
   })
+
+  if (linkError) {
+    console.error('[register] student_auth_links insert error:', JSON.stringify(linkError))
+    await admin.from('students').delete().eq('id', student.id)
+    return { errors: { name: '登録に失敗しました。もう一度お試しください。' } }
+  }
 
   redirect('/')
 }
