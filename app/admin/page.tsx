@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
-import { isAdmin } from '@/utils/isAdmin'
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土']
 
@@ -26,39 +25,39 @@ function formatDateLabel(dateStr: string) {
 
 export default async function AdminPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const adminClient = createAdminClient()
+
+  // getUser と adminsテーブル取得 を並列実行
+  const [{ data: { user } }, { data: dbAdmins }] = await Promise.all([
+    supabase.auth.getUser(),
+    adminClient.from('admins').select('auth_uid'),
+  ])
   if (!user) redirect('/login')
 
-  if (!(await isAdmin(user.id))) redirect('/')
+  const envAdminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
+    .split(',').map(s => s.trim()).filter(Boolean)
+  const dbAdminUids = dbAdmins?.map(a => a.auth_uid) ?? []
+  const allAdminUids = [...new Set([...envAdminUids, ...dbAdminUids])]
+
+  if (!allAdminUids.includes(user.id)) redirect('/')
 
   const today = getJSTToday()
   const dates = Array.from({ length: 15 }, (_, i) => addDays(today, i))
   const endDate = dates[dates.length - 1]
 
-  const admin = createAdminClient()
+  // adminリンク と 申告データ を並列取得
+  const [{ data: adminLinks }, { data: declarations }] = await Promise.all([
+    allAdminUids.length > 0
+      ? adminClient.from('student_auth_links').select('auth_uid, student_id').in('auth_uid', allAdminUids)
+      : Promise.resolve({ data: [] as { auth_uid: string; student_id: string }[] }),
+    adminClient.from('meal_declarations').select('student_id, date, breakfast, dinner')
+      .gte('date', today).lte('date', endDate),
+  ])
 
-  const envAdminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
-    .split(',').map(s => s.trim()).filter(Boolean)
-  const { data: dbAdmins } = await admin.from('admins').select('auth_uid')
-  const allAdminUids = [...new Set([...envAdminUids, ...(dbAdmins?.map(a => a.auth_uid) ?? [])])]
-
-  const { data: adminLinks } = allAdminUids.length > 0
-    ? await admin.from('student_auth_links').select('auth_uid, student_id').in('auth_uid', allAdminUids)
-    : { data: [] }
   const adminStudentIds = adminLinks?.map(l => l.student_id) ?? []
-
-  // DBで管理している管理者（権限取り消し可能な一覧）
-  const dbAdminUids = dbAdmins?.map(a => a.auth_uid) ?? []
   const dbAdminLinks = adminLinks?.filter(l => dbAdminUids.includes(l.auth_uid)) ?? []
-  const { data: dbAdminStudents } = dbAdminLinks.length > 0
-    ? await admin.from('students').select('id, name').in('id', dbAdminLinks.map(l => l.student_id))
-    : { data: [] }
-  const dbAdminList = dbAdminLinks.map(l => ({
-    studentId: l.student_id,
-    name: dbAdminStudents?.find(s => s.id === l.student_id)?.name ?? '（氏名不明）',
-  }))
 
-  let studentsQuery = admin
+  let studentsQuery = adminClient
     .from('students')
     .select('id, name, dormitory')
     .order('enrollment_year', { ascending: true })
@@ -67,14 +66,18 @@ export default async function AdminPage() {
     studentsQuery = studentsQuery.not('id', 'in', `(${adminStudentIds.join(',')})`)
   }
 
-  const [{ data: students }, { data: declarations }] = await Promise.all([
+  // 寮生一覧 と 管理者寮生情報 を並列取得
+  const [{ data: students }, { data: dbAdminStudents }] = await Promise.all([
     studentsQuery,
-    admin
-      .from('meal_declarations')
-      .select('student_id, date, breakfast, dinner')
-      .gte('date', today)
-      .lte('date', endDate),
+    dbAdminLinks.length > 0
+      ? adminClient.from('students').select('id, name').in('id', dbAdminLinks.map(l => l.student_id))
+      : Promise.resolve({ data: [] as { id: string; name: string }[] }),
   ])
+
+  const dbAdminList = dbAdminLinks.map(l => ({
+    studentId: l.student_id,
+    name: dbAdminStudents?.find(s => s.id === l.student_id)?.name ?? '（氏名不明）',
+  }))
 
   const declMap = new Map(
     declarations?.map(d => [`${d.student_id}:${d.date}`, d]) ?? []

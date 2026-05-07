@@ -2,7 +2,6 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
-import { isAdmin } from '@/utils/isAdmin'
 import StudentEditForm from './StudentEditForm'
 
 export default async function StudentDetailPage({
@@ -11,20 +10,31 @@ export default async function StudentDetailPage({
   params: Promise<{ id: string }>
 }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const adminClient = createAdminClient()
+
+  // getUser・params・adminsテーブル を並列取得
+  const [{ data: { user } }, { id }, { data: dbAdmins }] = await Promise.all([
+    supabase.auth.getUser(),
+    params,
+    adminClient.from('admins').select('auth_uid'),
+  ])
   if (!user) redirect('/login')
-  if (!(await isAdmin(user.id))) redirect('/')
 
-  const { id } = await params
-  const admin = createAdminClient()
+  const envAdminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
+    .split(',').map(s => s.trim()).filter(Boolean)
+  const dbAdminUids = dbAdmins?.map(a => a.auth_uid) ?? []
+  const allAdminUids = [...new Set([...envAdminUids, ...dbAdminUids])]
 
+  if (!allAdminUids.includes(user.id)) redirect('/')
+
+  // 寮生情報 と authLink を並列取得
   const [{ data: student }, { data: authLink }] = await Promise.all([
-    admin
+    adminClient
       .from('students')
       .select('id, name, furigana, phone, dormitory, enrollment_year, birth_date, room_number')
       .eq('id', id)
       .single(),
-    admin
+    adminClient
       .from('student_auth_links')
       .select('auth_uid')
       .eq('student_id', id)
@@ -34,7 +44,8 @@ export default async function StudentDetailPage({
   if (!student) notFound()
 
   const hasAuthLink = !!authLink
-  const isStudentAdmin = hasAuthLink ? await isAdmin(authLink!.auth_uid) : false
+  // 取得済みの allAdminUids でローカル判定（追加DBクエリ不要）
+  const isStudentAdmin = hasAuthLink ? allAdminUids.includes(authLink!.auth_uid) : false
 
   return (
     <div className="min-h-screen bg-gray-50">
