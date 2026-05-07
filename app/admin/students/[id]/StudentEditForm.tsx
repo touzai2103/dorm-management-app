@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useActionState, useTransition } from 'react'
+import { useState, useEffect, useActionState, useTransition, startTransition } from 'react'
 import { updateStudent, deleteStudent, setAdminRole, type UpdateStudentState } from '@/app/actions/admin'
 
 const currentYear = new Date().getFullYear()
@@ -116,7 +116,13 @@ export default function StudentEditForm({
   }
 
   return (
-    <form action={action} className="space-y-4">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        startTransition(() => action(new FormData(e.currentTarget)))
+      }}
+      className="space-y-4"
+    >
       <input type="hidden" name="student_id" value={student.id} />
 
       {isViewer && (
