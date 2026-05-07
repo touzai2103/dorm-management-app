@@ -257,7 +257,7 @@ export default function StudentEditForm({
           disabled={deleting}
           className="w-full border border-red-300 text-red-600 rounded-xl py-3 text-sm font-medium hover:bg-red-50 active:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
         >
-          {deleting ? '削除中...' : 'この寮生を削除する'}
+          {deleting ? '削除中...' : 'このユーザーを削除する'}
         </button>
       </div>
     </form>

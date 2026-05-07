@@ -18,9 +18,9 @@ export default async function LoginPage({
             className="mx-auto mb-4"
             priority
           />
-          <h1 className="text-2xl font-bold text-gray-900">寮生食事申告</h1>
+          <h1 className="text-2xl font-bold text-gray-900">寮生食事申告アプリ</h1>
           <p className="mt-2 text-sm text-gray-500">
-            アカウントでログインしてください
+            LINEアカウントでログインしてください
           </p>
         </div>
 

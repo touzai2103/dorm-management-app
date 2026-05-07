@@ -160,9 +160,9 @@ export default async function AdminPage() {
                     })}
                   </tr>
                   {dStudents.map((s, idx) => (
-                    <tr key={s.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
-                      <td className={`sticky left-0 z-10 border-r border-gray-100 px-3 py-2 font-medium text-gray-800 whitespace-nowrap ${
-                        idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                    <tr key={s.id} className={`group transition-colors ${idx % 2 === 0 ? 'bg-white hover:bg-blue-50/40' : 'bg-gray-50/50 hover:bg-blue-50/40'}`}>
+                      <td className={`sticky left-0 z-10 border-r border-gray-100 px-3 py-2 font-medium text-gray-800 whitespace-nowrap transition-colors ${
+                        idx % 2 === 0 ? 'bg-white group-hover:bg-blue-50/40' : 'bg-gray-50 group-hover:bg-blue-50/40'
                       }`}>
                         <Link href={`/admin/students/${s.id}`} className="relative after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-0 after:bg-blue-500 after:transition-all after:duration-200 hover:text-blue-600 hover:after:w-full">
                           {s.name}
@@ -199,13 +199,18 @@ export default async function AdminPage() {
             </div>
             <ul className="divide-y divide-gray-100">
               {dbAdminList.map(a => (
-                <li key={a.studentId} className="px-4 py-3 flex items-center justify-between">
-                  <span className="text-sm text-gray-800">{a.name}</span>
+                <li key={a.studentId}>
                   <Link
                     href={`/admin/students/${a.studentId}`}
-                    className="text-xs text-blue-600 hover:underline"
+                    className="px-4 py-3 flex items-center justify-between group hover:bg-white/50 transition-colors"
                   >
-                    権限を管理 →
+                    <span className="text-sm text-gray-800">{a.name}</span>
+                    <span className="flex items-center gap-1 text-xs text-blue-600 transition-colors group-hover:text-blue-800">
+                      権限を管理
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5">
+                        <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+                      </svg>
+                    </span>
                   </Link>
                 </li>
               ))}
