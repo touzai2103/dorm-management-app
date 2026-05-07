@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { signOut } from '@/app/actions/auth'
 import MealCalendar from '@/app/components/MealCalendar'
+import { isAdmin } from '@/utils/isAdmin'
 
 function getJSTToday(): string {
   const jst = new Date(Date.now() + 9 * 60 * 60 * 1000)
@@ -18,10 +19,7 @@ export default async function Home() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-
-  const adminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
-    .split(',').map(s => s.trim()).filter(Boolean)
-  if (adminUids.includes(user.id)) redirect('/admin')
+  if (await isAdmin(user.id)) redirect('/admin')
 
   const { data: authLink } = await supabase
     .from('student_auth_links')

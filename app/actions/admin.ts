@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
+import { isAdmin } from '@/utils/isAdmin'
 
 export type UpdateStudentState = {
   success?: boolean
@@ -18,13 +19,16 @@ export type UpdateStudentState = {
   }
 } | null
 
+export type AdminGrantState = {
+  success?: boolean
+  error?: string
+} | null
+
 async function checkAdmin(): Promise<boolean> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return false
-  const adminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
-    .split(',').map(s => s.trim()).filter(Boolean)
-  return adminUids.includes(user.id)
+  return isAdmin(user.id)
 }
 
 export async function updateStudent(
@@ -127,4 +131,53 @@ export async function deleteStudent(studentId: string): Promise<void> {
 
   revalidatePath('/admin')
   redirect('/admin')
+}
+
+export async function grantAdmin(studentId: string): Promise<AdminGrantState> {
+  if (!(await checkAdmin())) return { error: '権限がありません' }
+
+  const admin = createAdminClient()
+  const { data: link } = await admin
+    .from('student_auth_links')
+    .select('auth_uid')
+    .eq('student_id', studentId)
+    .maybeSingle()
+
+  if (!link) return { error: 'このユーザーはまだログインしていないため付与できません' }
+
+  const { error } = await admin
+    .from('admins')
+    .upsert({ auth_uid: link.auth_uid })
+
+  if (error) {
+    console.error('[admin] grantAdmin error:', JSON.stringify(error))
+    return { error: '権限付与に失敗しました' }
+  }
+
+  revalidatePath(`/admin/students/${studentId}`)
+  return { success: true }
+}
+
+export async function revokeAdmin(studentId: string): Promise<AdminGrantState> {
+  if (!(await checkAdmin())) return { error: '権限がありません' }
+
+  const admin = createAdminClient()
+  const { data: link } = await admin
+    .from('student_auth_links')
+    .select('auth_uid')
+    .eq('student_id', studentId)
+    .maybeSingle()
+
+  if (!link) return { error: 'リンクが見つかりません' }
+
+  const envAdminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
+    .split(',').map(s => s.trim()).filter(Boolean)
+  if (envAdminUids.includes(link.auth_uid)) {
+    return { error: '環境変数で設定された管理者はUIから変更できません' }
+  }
+
+  await admin.from('admins').delete().eq('auth_uid', link.auth_uid)
+
+  revalidatePath(`/admin/students/${studentId}`)
+  return { success: true }
 }

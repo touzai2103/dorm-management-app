@@ -1,7 +1,7 @@
 'use client'
 
-import { useActionState, useTransition } from 'react'
-import { updateStudent, deleteStudent, type UpdateStudentState } from '@/app/actions/admin'
+import { useState, useActionState, useTransition } from 'react'
+import { updateStudent, deleteStudent, grantAdmin, revokeAdmin, type UpdateStudentState } from '@/app/actions/admin'
 
 const currentYear = new Date().getFullYear()
 const enrollmentYears = Array.from({ length: 6 }, (_, i) => currentYear - 4 + i).reverse()
@@ -62,17 +62,44 @@ function Field({
   )
 }
 
-export default function StudentEditForm({ student }: { student: Student }) {
+export default function StudentEditForm({
+  student,
+  hasAuthLink,
+  isStudentAdmin,
+}: {
+  student: Student
+  hasAuthLink: boolean
+  isStudentAdmin: boolean
+}) {
   const [state, action, pending] = useActionState<UpdateStudentState, FormData>(
     updateStudent,
     null
   )
   const [deleting, startDelete] = useTransition()
+  const [adminPending, startAdmin] = useTransition()
+  const [adminError, setAdminError] = useState<string | null>(null)
 
   function handleDelete() {
     if (!window.confirm(`「${student.name}」を削除しますか？\nこの操作は元に戻せません。`)) return
     startDelete(async () => {
       await deleteStudent(student.id)
+    })
+  }
+
+  function handleGrantAdmin() {
+    setAdminError(null)
+    startAdmin(async () => {
+      const result = await grantAdmin(student.id)
+      if (result?.error) setAdminError(result.error)
+    })
+  }
+
+  function handleRevokeAdmin() {
+    if (!window.confirm(`「${student.name}」の管理者権限を取り消しますか？`)) return
+    setAdminError(null)
+    startAdmin(async () => {
+      const result = await revokeAdmin(student.id)
+      if (result?.error) setAdminError(result.error)
     })
   }
 
@@ -197,7 +224,33 @@ export default function StudentEditForm({ student }: { student: Student }) {
         {pending ? '更新中...' : '更新する'}
       </button>
 
-      <div className="border-t border-gray-100 pt-4 mt-2">
+      <div className="border-t border-gray-100 pt-4 mt-2 space-y-3">
+        <p className="text-sm font-medium text-gray-700">管理者権限</p>
+        {!hasAuthLink ? (
+          <p className="text-xs text-gray-400">まだログインしていないため権限を変更できません</p>
+        ) : isStudentAdmin ? (
+          <button
+            type="button"
+            onClick={handleRevokeAdmin}
+            disabled={adminPending}
+            className="w-full border border-orange-300 text-orange-600 rounded-xl py-3 text-sm font-medium hover:bg-orange-50 active:bg-orange-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          >
+            {adminPending ? '処理中...' : '管理者権限を取り消す'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleGrantAdmin}
+            disabled={adminPending}
+            className="w-full border border-green-300 text-green-700 rounded-xl py-3 text-sm font-medium hover:bg-green-50 active:bg-green-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          >
+            {adminPending ? '処理中...' : '管理者権限を付与する'}
+          </button>
+        )}
+        {adminError && <p className="text-xs text-red-600">{adminError}</p>}
+      </div>
+
+      <div className="border-t border-gray-100 pt-4">
         <button
           type="button"
           onClick={handleDelete}

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
+import { isAdmin } from '@/utils/isAdmin'
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土']
 
@@ -28,9 +29,7 @@ export default async function AdminPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const adminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
-    .split(',').map(s => s.trim()).filter(Boolean)
-  if (!adminUids.includes(user.id)) redirect('/')
+  if (!(await isAdmin(user.id))) redirect('/')
 
   const today = getJSTToday()
   const dates = Array.from({ length: 15 }, (_, i) => addDays(today, i))
@@ -38,10 +37,14 @@ export default async function AdminPage() {
 
   const admin = createAdminClient()
 
-  const { data: adminLinks } = await admin
-    .from('student_auth_links')
-    .select('student_id')
-    .in('auth_uid', adminUids)
+  const envAdminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
+    .split(',').map(s => s.trim()).filter(Boolean)
+  const { data: dbAdmins } = await admin.from('admins').select('auth_uid')
+  const allAdminUids = [...new Set([...envAdminUids, ...(dbAdmins?.map(a => a.auth_uid) ?? [])])]
+
+  const { data: adminLinks } = allAdminUids.length > 0
+    ? await admin.from('student_auth_links').select('student_id').in('auth_uid', allAdminUids)
+    : { data: [] }
   const adminStudentIds = adminLinks?.map(l => l.student_id) ?? []
 
   let studentsQuery = admin

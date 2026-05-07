@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
+import { isAdmin } from '@/utils/isAdmin'
 import StudentEditForm from './StudentEditForm'
 
 export default async function StudentDetailPage({
@@ -12,21 +13,28 @@ export default async function StudentDetailPage({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-
-  const adminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
-    .split(',').map(s => s.trim()).filter(Boolean)
-  if (!adminUids.includes(user.id)) redirect('/')
+  if (!(await isAdmin(user.id))) redirect('/')
 
   const { id } = await params
   const admin = createAdminClient()
 
-  const { data: student } = await admin
-    .from('students')
-    .select('id, name, furigana, phone, dormitory, enrollment_year, birth_date, room_number')
-    .eq('id', id)
-    .single()
+  const [{ data: student }, { data: authLink }] = await Promise.all([
+    admin
+      .from('students')
+      .select('id, name, furigana, phone, dormitory, enrollment_year, birth_date, room_number')
+      .eq('id', id)
+      .single(),
+    admin
+      .from('student_auth_links')
+      .select('auth_uid')
+      .eq('student_id', id)
+      .maybeSingle(),
+  ])
 
   if (!student) notFound()
+
+  const hasAuthLink = !!authLink
+  const isStudentAdmin = hasAuthLink ? await isAdmin(authLink!.auth_uid) : false
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -41,7 +49,11 @@ export default async function StudentDetailPage({
 
         <div className="p-4">
           <div className="bg-white rounded-xl shadow-sm p-5">
-            <StudentEditForm student={student} />
+            <StudentEditForm
+              student={student}
+              hasAuthLink={hasAuthLink}
+              isStudentAdmin={isStudentAdmin}
+            />
           </div>
         </div>
       </div>
