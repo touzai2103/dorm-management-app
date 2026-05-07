@@ -1,0 +1,165 @@
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
+
+const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土']
+
+function getJSTToday(): string {
+  const jst = new Date(Date.now() + 9 * 60 * 60 * 1000)
+  return jst.toISOString().split('T')[0]
+}
+
+function addDays(dateStr: string, days: number): string {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const date = new Date(Date.UTC(y, m - 1, d + days))
+  return date.toISOString().split('T')[0]
+}
+
+function formatDateLabel(dateStr: string) {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const utcDate = new Date(Date.UTC(y, m - 1, d))
+  const dow = WEEKDAYS[utcDate.getUTCDay()]
+  return { short: `${m}/${d}`, dow }
+}
+
+export default async function AdminPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const adminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
+    .split(',').map(s => s.trim()).filter(Boolean)
+  if (!adminUids.includes(user.id)) redirect('/')
+
+  const today = getJSTToday()
+  const dates = Array.from({ length: 15 }, (_, i) => addDays(today, i))
+  const endDate = dates[dates.length - 1]
+
+  const admin = createAdminClient()
+
+  const [{ data: students }, { data: declarations }] = await Promise.all([
+    admin
+      .from('students')
+      .select('id, name, dormitory')
+      .order('enrollment_year', { ascending: true })
+      .order('furigana', { ascending: true }),
+    admin
+      .from('meal_declarations')
+      .select('student_id, date, breakfast, dinner')
+      .gte('date', today)
+      .lte('date', endDate),
+  ])
+
+  const declMap = new Map(
+    declarations?.map(d => [`${d.student_id}:${d.date}`, d]) ?? []
+  )
+
+  const dormGroups: Record<string, NonNullable<typeof students>> = {}
+  students?.forEach(s => {
+    if (!dormGroups[s.dormitory]) dormGroups[s.dormitory] = []
+    dormGroups[s.dormitory].push(s)
+  })
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-20 flex items-center justify-between">
+        <h1 className="text-base font-bold text-gray-900">管理者画面</h1>
+        <a
+          href="/api/admin/csv"
+          className="text-xs text-blue-600 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50 transition-colors"
+        >
+          CSV出力
+        </a>
+      </header>
+
+      <div className="p-4 space-y-6">
+        {Object.entries(dormGroups).map(([dormitory, dStudents]) => (
+          <div key={dormitory} className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+              <span className="text-sm font-bold text-gray-700">{dormitory}</span>
+              <span className="text-xs text-gray-400 ml-2">{dStudents.length}人</span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="text-xs border-collapse">
+                <thead>
+                  <tr>
+                    <th className="sticky left-0 z-10 bg-gray-50 border-b border-r border-gray-100 px-3 py-2 text-left font-medium text-gray-500 min-w-[80px]">
+                      氏名
+                    </th>
+                    {dates.map(date => {
+                      const { short, dow } = formatDateLabel(date)
+                      const isWeekend = dow === '土' || dow === '日'
+                      return (
+                        <th
+                          key={date}
+                          className={`border-b border-r border-gray-100 px-1 py-1.5 text-center font-medium min-w-[52px] ${
+                            isWeekend ? 'text-blue-400' : 'text-gray-500'
+                          }`}
+                        >
+                          <div>{short}</div>
+                          <div>({dow})</div>
+                          <div className="flex justify-center gap-0.5 mt-1 text-gray-300 font-normal">
+                            <span>朝</span><span>|</span><span>夕</span>
+                          </div>
+                        </th>
+                      )
+                    })}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="bg-gray-50 border-b-2 border-gray-200">
+                    <td className="sticky left-0 z-10 bg-gray-50 border-r border-gray-200 px-3 py-2 font-bold text-gray-600 whitespace-nowrap">
+                      合計
+                    </td>
+                    {dates.map(date => {
+                      const bf = dStudents.filter(s => declMap.get(`${s.id}:${date}`)?.breakfast).length
+                      const dn = dStudents.filter(s => declMap.get(`${s.id}:${date}`)?.dinner).length
+                      return (
+                        <td key={date} className="border-r border-gray-200 p-0 text-center">
+                          <div className="flex justify-center items-center w-full py-1.5 text-sm">
+                            <span className={`flex-1 text-center ${bf > 0 ? 'text-red-500 font-bold' : 'text-gray-200'}`}>{bf}</span>
+                            <span className="text-gray-200">|</span>
+                            <span className={`flex-1 text-center ${dn > 0 ? 'text-red-500 font-bold' : 'text-gray-200'}`}>{dn}</span>
+                          </div>
+                        </td>
+                      )
+                    })}
+                  </tr>
+                  {dStudents.map((s, idx) => (
+                    <tr key={s.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
+                      <td className={`sticky left-0 z-10 border-r border-gray-100 px-3 py-2 font-medium text-gray-800 whitespace-nowrap ${
+                        idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                      }`}>
+                        <Link href={`/admin/students/${s.id}`} className="hover:text-blue-600 hover:underline">
+                          {s.name}
+                        </Link>
+                      </td>
+                      {dates.map(date => {
+                        const decl = declMap.get(`${s.id}:${date}`)
+                        return (
+                          <td key={date} className="border-r border-gray-100 p-0 text-center">
+                            <div className="flex justify-center items-center w-full py-1.5 text-sm">
+                              <span className={`flex-1 text-center ${decl?.breakfast ? 'text-red-500 font-bold' : 'text-gray-200'}`}>
+                                {decl?.breakfast ? '○' : '✕'}
+                              </span>
+                              <span className="text-gray-200">|</span>
+                              <span className={`flex-1 text-center ${decl?.dinner ? 'text-red-500 font-bold' : 'text-gray-200'}`}>
+                                {decl?.dinner ? '○' : '✕'}
+                              </span>
+                            </div>
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
