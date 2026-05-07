@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useActionState, useTransition } from 'react'
+import { useState, useEffect, useActionState, useTransition, useRef } from 'react'
 import { updateStudent, deleteStudent, setAdminRole, type UpdateStudentState } from '@/app/actions/admin'
 
 const currentYear = new Date().getFullYear()
@@ -90,6 +90,15 @@ function StudentEditFormInner({
   const [adminPending, startAdmin] = useTransition()
   const [adminError, setAdminError] = useState<string | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    const form = formRef.current
+    if (!form) return
+    const original = form.reset.bind(form)
+    form.reset = () => {}
+    return () => { form.reset = original }
+  }, [])
 
   useEffect(() => {
     if (!state?.success) return
@@ -116,13 +125,7 @@ function StudentEditFormInner({
   }
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault()
-        action(new FormData(e.currentTarget))
-      }}
-      className="space-y-4"
-    >
+    <form ref={formRef} action={action} className="space-y-4">
       <input type="hidden" name="student_id" value={student.id} />
 
       {isViewer && (
