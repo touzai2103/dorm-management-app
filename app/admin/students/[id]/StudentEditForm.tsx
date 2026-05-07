@@ -264,8 +264,8 @@ export default function StudentEditForm({
                   disabled={isViewer || adminPending || isActive}
                   className={`flex-1 py-2 text-xs rounded-xl border transition-colors ${
                     isActive
-                      ? 'bg-blue-600 text-white border-blue-600 font-medium'
-                      : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                      ? 'bg-orange-500 text-white border-orange-500 font-medium'
+                      : 'border-gray-200 text-gray-600 hover:bg-orange-50'
                   } disabled:opacity-60 disabled:cursor-not-allowed`}
                 >
                   {label}
