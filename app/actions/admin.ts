@@ -38,7 +38,7 @@ export async function updateStudent(
   if (!(await checkAdmin())) return { errors: { name: '権限がありません' } }
 
   const studentId = formData.get('student_id') as string
-  const name = (formData.get('name') as string)?.trim()
+  const name = (formData.get('name') as string)?.trim().replace(/　/g, ' ')
   const furigana = (formData.get('furigana') as string)?.trim()
   const rawPhone = (formData.get('phone') as string) ?? ''
   const phone = rawPhone.replace(/[-\s]/g, '')
