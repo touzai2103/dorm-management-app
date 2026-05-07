@@ -38,12 +38,23 @@ export default async function AdminPage() {
 
   const admin = createAdminClient()
 
+  const { data: adminLinks } = await admin
+    .from('student_auth_links')
+    .select('student_id')
+    .in('auth_uid', adminUids)
+  const adminStudentIds = adminLinks?.map(l => l.student_id) ?? []
+
+  let studentsQuery = admin
+    .from('students')
+    .select('id, name, dormitory')
+    .order('enrollment_year', { ascending: true })
+    .order('furigana', { ascending: true })
+  if (adminStudentIds.length > 0) {
+    studentsQuery = studentsQuery.not('id', 'in', `(${adminStudentIds.join(',')})`)
+  }
+
   const [{ data: students }, { data: declarations }] = await Promise.all([
-    admin
-      .from('students')
-      .select('id, name, dormitory')
-      .order('enrollment_year', { ascending: true })
-      .order('furigana', { ascending: true }),
+    studentsQuery,
     admin
       .from('meal_declarations')
       .select('student_id, date, breakfast, dinner')

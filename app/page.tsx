@@ -19,6 +19,10 @@ export default async function Home() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const adminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
+    .split(',').map(s => s.trim()).filter(Boolean)
+  if (adminUids.includes(user.id)) redirect('/admin')
+
   const { data: authLink } = await supabase
     .from('student_auth_links')
     .select('student_id')
