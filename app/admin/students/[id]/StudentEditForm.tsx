@@ -76,11 +76,13 @@ function StudentEditFormInner({
   hasAuthLink,
   studentRole,
   isViewer,
+  onSuccess,
 }: {
   student: Student
   hasAuthLink: boolean
   studentRole: 'admin' | 'viewer' | null
   isViewer: boolean
+  onSuccess: () => void
 }) {
   const [state, action, pending] = useActionState<UpdateStudentState, FormData>(
     updateStudent,
@@ -89,7 +91,6 @@ function StudentEditFormInner({
   const [deleting, startDelete] = useTransition()
   const [adminPending, startAdmin] = useTransition()
   const [adminError, setAdminError] = useState<string | null>(null)
-  const [showSuccess, setShowSuccess] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
@@ -101,10 +102,7 @@ function StudentEditFormInner({
   }, [])
 
   useEffect(() => {
-    if (!state?.success) return
-    setShowSuccess(true)
-    const id = setTimeout(() => setShowSuccess(false), 3000)
-    return () => clearTimeout(id)
+    if (state?.success) onSuccess()
   }, [state])
 
   function handleDelete() {
@@ -131,12 +129,6 @@ function StudentEditFormInner({
       {isViewer && (
         <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-500">
           閲覧専用モードです
-        </div>
-      )}
-
-      {showSuccess && (
-        <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-700">
-          更新しました
         </div>
       )}
 
@@ -167,6 +159,15 @@ function StudentEditFormInner({
             hint="ハイフン不要"
             error={state?.errors?.phone}
           />
+
+          {studentRole && (
+            <>
+              <input type="hidden" name="dormitory" value={student.dormitory} />
+              <input type="hidden" name="enrollment_year" value={student.enrollment_year} />
+              <input type="hidden" name="birth_date" value={student.birth_date} />
+              <input type="hidden" name="room_number" value={student.room_number ?? ''} />
+            </>
+          )}
 
           {!studentRole && (
             <>
@@ -312,6 +313,8 @@ export default function StudentEditForm(props: {
   studentRole: 'admin' | 'viewer' | null
   isViewer: boolean
 }) {
+  const [showSuccess, setShowSuccess] = useState(false)
+
   const key = [
     props.student.name,
     props.student.furigana,
@@ -322,5 +325,21 @@ export default function StudentEditForm(props: {
     props.student.room_number,
   ].join('|')
 
-  return <StudentEditFormInner key={key} {...props} />
+  return (
+    <>
+      {showSuccess && (
+        <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-700 mb-4">
+          更新しました
+        </div>
+      )}
+      <StudentEditFormInner
+        key={key}
+        {...props}
+        onSuccess={() => {
+          setShowSuccess(true)
+          setTimeout(() => setShowSuccess(false), 3000)
+        }}
+      />
+    </>
+  )
 }
