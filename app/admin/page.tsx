@@ -43,9 +43,20 @@ export default async function AdminPage() {
   const allAdminUids = [...new Set([...envAdminUids, ...(dbAdmins?.map(a => a.auth_uid) ?? [])])]
 
   const { data: adminLinks } = allAdminUids.length > 0
-    ? await admin.from('student_auth_links').select('student_id').in('auth_uid', allAdminUids)
+    ? await admin.from('student_auth_links').select('auth_uid, student_id').in('auth_uid', allAdminUids)
     : { data: [] }
   const adminStudentIds = adminLinks?.map(l => l.student_id) ?? []
+
+  // DBで管理している管理者（権限取り消し可能な一覧）
+  const dbAdminUids = dbAdmins?.map(a => a.auth_uid) ?? []
+  const dbAdminLinks = adminLinks?.filter(l => dbAdminUids.includes(l.auth_uid)) ?? []
+  const { data: dbAdminStudents } = dbAdminLinks.length > 0
+    ? await admin.from('students').select('id, name').in('id', dbAdminLinks.map(l => l.student_id))
+    : { data: [] }
+  const dbAdminList = dbAdminLinks.map(l => ({
+    studentId: l.student_id,
+    name: dbAdminStudents?.find(s => s.id === l.student_id)?.name ?? '（氏名不明）',
+  }))
 
   let studentsQuery = admin
     .from('students')
@@ -88,6 +99,27 @@ export default async function AdminPage() {
       </header>
 
       <div className="p-4 space-y-6">
+        {dbAdminList.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+              <span className="text-sm font-bold text-gray-700">管理者</span>
+            </div>
+            <ul className="divide-y divide-gray-100">
+              {dbAdminList.map(a => (
+                <li key={a.studentId} className="px-4 py-3 flex items-center justify-between">
+                  <span className="text-sm text-gray-800">{a.name}</span>
+                  <Link
+                    href={`/admin/students/${a.studentId}`}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    権限を管理 →
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {Object.entries(dormGroups).map(([dormitory, dStudents]) => (
           <div key={dormitory} className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
