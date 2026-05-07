@@ -3,6 +3,7 @@ import { createAdminClient } from '@/utils/supabase/admin'
 import { redirect } from 'next/navigation'
 import { signOut } from '@/app/actions/auth'
 import MealCalendar from '@/app/components/MealCalendar'
+import Image from 'next/image'
 
 function getJSTToday(): string {
   const jst = new Date(Date.now() + 9 * 60 * 60 * 1000)
@@ -59,13 +60,16 @@ export default async function Home() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-lg mx-auto">
         <header className="bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-10 flex items-center justify-between">
-          <div>
-            <h1 className="text-base font-bold text-gray-900">食事申告</h1>
-            {student && (
-              <p className="text-xs text-gray-500">
-                {student.name} · {student.dormitory}
-              </p>
-            )}
+          <div className="flex items-center gap-2">
+            <Image src="/logo.png" alt="ロゴ" width={28} height={28} />
+            <div>
+              <h1 className="text-base font-bold text-gray-900">食事申告</h1>
+              {student && (
+                <p className="text-xs text-gray-500">
+                  {student.name} · {student.dormitory}
+                </p>
+              )}
+            </div>
           </div>
           <form action={signOut}>
             <button
