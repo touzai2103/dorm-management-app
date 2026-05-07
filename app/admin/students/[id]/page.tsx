@@ -28,7 +28,7 @@ export default async function StudentDetailPage({
   const [{ data: { user } }, { id }, { data: dbAdmins }] = await Promise.all([
     supabase.auth.getUser(),
     params,
-    adminClient.from('admins').select('auth_uid'),
+    adminClient.from('admins').select('auth_uid, role'),
   ])
   if (!user) redirect('/login')
 
@@ -38,6 +38,11 @@ export default async function StudentDetailPage({
   const allAdminUids = [...new Set([...envAdminUids, ...dbAdminUids])]
 
   if (!allAdminUids.includes(user.id)) redirect('/')
+
+  const currentUserRole = envAdminUids.includes(user.id)
+    ? 'admin'
+    : (dbAdmins?.find(a => a.auth_uid === user.id)?.role ?? 'admin')
+  const isCurrentUserViewer = currentUserRole === 'viewer'
 
   const today = getJSTToday()
   const endDate = addDays(today, 14)
@@ -65,7 +70,10 @@ export default async function StudentDetailPage({
   if (!student) notFound()
 
   const hasAuthLink = !!authLink
-  const isStudentAdmin = hasAuthLink ? allAdminUids.includes(authLink!.auth_uid) : false
+  const studentRole = hasAuthLink
+    ? (dbAdmins?.find(a => a.auth_uid === authLink!.auth_uid)?.role as 'admin' | 'viewer' | undefined
+        ?? (envAdminUids.includes(authLink!.auth_uid) ? 'admin' : null))
+    : null
 
   const declarationMap: Record<string, { breakfast: boolean; dinner: boolean }> = {}
   declarations?.forEach(d => {
@@ -90,7 +98,8 @@ export default async function StudentDetailPage({
             <StudentEditForm
               student={student}
               hasAuthLink={hasAuthLink}
-              isStudentAdmin={isStudentAdmin}
+              studentRole={studentRole}
+              isViewer={isCurrentUserViewer}
             />
           </div>
 
@@ -103,6 +112,7 @@ export default async function StudentDetailPage({
               studentId={student.id}
               declarations={declarationMap}
               today={today}
+              readOnly={isCurrentUserViewer}
             />
           </div>
         </div>

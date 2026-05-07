@@ -31,7 +31,7 @@ export default async function AdminPage() {
   // getUser と adminsテーブル取得 を並列実行
   const [{ data: { user } }, { data: dbAdmins }] = await Promise.all([
     supabase.auth.getUser(),
-    adminClient.from('admins').select('auth_uid'),
+    adminClient.from('admins').select('auth_uid, role'),
   ])
   if (!user) redirect('/login')
 
@@ -78,6 +78,7 @@ export default async function AdminPage() {
   const dbAdminList = dbAdminLinks.map(l => ({
     studentId: l.student_id,
     name: dbAdminStudents?.find(s => s.id === l.student_id)?.name ?? '（氏名不明）',
+    role: (dbAdmins?.find(a => a.auth_uid === l.auth_uid)?.role ?? 'admin') as 'admin' | 'viewer',
   }))
 
   const declMap = new Map(
@@ -204,7 +205,16 @@ export default async function AdminPage() {
                     href={`/admin/students/${a.studentId}`}
                     className="px-4 py-3 flex items-center justify-between group hover:bg-white/50 transition-colors"
                   >
-                    <span className="text-sm text-gray-800">{a.name}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-800">{a.name}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        a.role === 'admin'
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {a.role === 'admin' ? '管理者' : '閲覧者'}
+                      </span>
+                    </div>
                     <span className="flex items-center gap-1 text-xs text-blue-600 transition-colors group-hover:text-blue-800">
                       権限を管理
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5">

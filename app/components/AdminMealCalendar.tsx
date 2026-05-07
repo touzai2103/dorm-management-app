@@ -8,6 +8,7 @@ type Props = {
   studentId: string
   declarations: Record<string, DayDeclaration>
   today: string
+  readOnly?: boolean
 }
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土']
@@ -38,16 +39,19 @@ function Toggle({
   label,
   value,
   onChange,
+  disabled = false,
 }: {
   label: string
   value: boolean
   onChange: () => void
+  disabled?: boolean
 }) {
   return (
     <button
       type="button"
       onClick={onChange}
-      className="flex flex-col items-center gap-1"
+      disabled={disabled}
+      className="flex flex-col items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <span className="text-xs text-gray-500">{label}</span>
       <div
@@ -68,11 +72,12 @@ function Toggle({
   )
 }
 
-export default function AdminMealCalendar({ studentId, declarations, today }: Props) {
+export default function AdminMealCalendar({ studentId, declarations, today, readOnly = false }: Props) {
   const [state, setState] = useState(declarations)
   const [, startTransition] = useTransition()
 
   function handleToggle(date: string, meal: 'breakfast' | 'dinner') {
+    if (readOnly) return
     const current = state[date] ?? { breakfast: false, dinner: false }
     const updated = { ...current, [meal]: !current[meal] }
     setState(prev => ({ ...prev, [date]: updated }))
@@ -119,11 +124,13 @@ export default function AdminMealCalendar({ studentId, declarations, today }: Pr
               label="朝食"
               value={decl.breakfast}
               onChange={() => handleToggle(date, 'breakfast')}
+              disabled={readOnly}
             />
             <Toggle
               label="夕食"
               value={decl.dinner}
               onChange={() => handleToggle(date, 'dinner')}
+              disabled={readOnly}
             />
           </div>
         )

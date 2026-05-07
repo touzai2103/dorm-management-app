@@ -128,7 +128,10 @@ export async function deleteStudent(studentId: string): Promise<void> {
   redirect('/admin')
 }
 
-export async function grantAdmin(studentId: string): Promise<AdminGrantState> {
+export async function setAdminRole(
+  studentId: string,
+  role: 'admin' | 'viewer' | null
+): Promise<AdminGrantState> {
   if (!(await checkAdmin())) return { error: '権限がありません' }
 
   const admin = createAdminClient()
@@ -138,32 +141,7 @@ export async function grantAdmin(studentId: string): Promise<AdminGrantState> {
     .eq('student_id', studentId)
     .maybeSingle()
 
-  if (!link) return { error: 'このユーザーはまだログインしていないため付与できません' }
-
-  const { error } = await admin
-    .from('admins')
-    .upsert({ auth_uid: link.auth_uid })
-
-  if (error) {
-    console.error('[admin] grantAdmin error:', JSON.stringify(error))
-    return { error: '権限付与に失敗しました' }
-  }
-
-  revalidatePath(`/admin/students/${studentId}`)
-  return { success: true }
-}
-
-export async function revokeAdmin(studentId: string): Promise<AdminGrantState> {
-  if (!(await checkAdmin())) return { error: '権限がありません' }
-
-  const admin = createAdminClient()
-  const { data: link } = await admin
-    .from('student_auth_links')
-    .select('auth_uid')
-    .eq('student_id', studentId)
-    .maybeSingle()
-
-  if (!link) return { error: 'リンクが見つかりません' }
+  if (!link) return { error: 'このユーザーはまだログインしていないため設定できません' }
 
   const envAdminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
     .split(',').map(s => s.trim()).filter(Boolean)
@@ -171,8 +149,19 @@ export async function revokeAdmin(studentId: string): Promise<AdminGrantState> {
     return { error: '環境変数で設定された管理者はUIから変更できません' }
   }
 
-  await admin.from('admins').delete().eq('auth_uid', link.auth_uid)
+  if (role === null) {
+    await admin.from('admins').delete().eq('auth_uid', link.auth_uid)
+  } else {
+    const { error } = await admin
+      .from('admins')
+      .upsert({ auth_uid: link.auth_uid, role })
+    if (error) {
+      console.error('[admin] setAdminRole error:', JSON.stringify(error))
+      return { error: '権限の変更に失敗しました' }
+    }
+  }
 
+  revalidatePath('/admin')
   revalidatePath(`/admin/students/${studentId}`)
   return { success: true }
 }
