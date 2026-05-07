@@ -102,20 +102,24 @@ export default function MealCalendar({ studentId, declarations, today }: Props) 
 
   return (
     <div className="divide-y divide-gray-100">
-      {dates.map(date => {
+      {dates.map((date, idx) => {
         const past = isPastDeadline(date)
         const decl = state[date] ?? { breakfast: false, dinner: false }
         const { label, dayOfWeek, mmdd } = formatDate(date, today)
+        const isSat = dayOfWeek === '土'
+        const isSun = dayOfWeek === '日'
+        const dateColor = isSat ? 'text-blue-500' : isSun ? 'text-red-500' : 'text-gray-900'
+        const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-[#ebe7df]'
 
         return (
           <div
             key={date}
-            className={`px-4 py-3 bg-white flex items-center justify-between ${past ? 'opacity-50' : ''}`}
+            className={`px-4 py-3 ${rowBg} flex items-center justify-between ${past ? 'opacity-50' : ''}`}
           >
             <div className="w-24 shrink-0">
-              <div className="text-xl font-bold text-gray-900">
+              <div className={`text-xl font-bold ${dateColor}`}>
                 {mmdd}
-                <span className="text-gray-500">({dayOfWeek})</span>
+                <span>({dayOfWeek})</span>
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
                 {label && (
