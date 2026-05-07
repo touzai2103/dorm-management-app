@@ -3,6 +3,46 @@
 import { useState, useEffect, useActionState, useTransition, useRef } from 'react'
 import { updateStudent, deleteStudent, setAdminRole, type UpdateStudentState } from '@/app/actions/admin'
 
+type ModalConfig = {
+  title: string
+  message: string
+  confirmLabel: string
+  danger?: boolean
+  onConfirm: () => void
+}
+
+function Modal({ config, onClose }: { config: ModalConfig; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+        <h2 className="text-base font-bold text-gray-900">{config.title}</h2>
+        <p className="text-sm text-gray-600 whitespace-pre-wrap">{config.message}</p>
+        <div className="flex gap-3 pt-1">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 py-2.5 text-sm rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            キャンセル
+          </button>
+          <button
+            type="button"
+            onClick={() => { onClose(); config.onConfirm() }}
+            className={`flex-1 py-2.5 text-sm rounded-xl font-medium transition-colors ${
+              config.danger
+                ? 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800'
+                : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
+            }`}
+          >
+            {config.confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const currentYear = new Date().getFullYear()
 const enrollmentYears = Array.from({ length: 6 }, (_, i) => currentYear - 4 + i).reverse()
 
@@ -91,6 +131,7 @@ function StudentEditFormInner({
   const [deleting, startDelete] = useTransition()
   const [adminPending, startAdmin] = useTransition()
   const [adminError, setAdminError] = useState<string | null>(null)
+  const [modal, setModal] = useState<ModalConfig | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
@@ -106,19 +147,42 @@ function StudentEditFormInner({
   }, [state])
 
   function handleDelete() {
-    if (!window.confirm(`「${student.name}」を削除しますか？\nこの操作は元に戻せません。`)) return
-    startDelete(async () => {
-      await deleteStudent(student.id)
+    setModal({
+      title: 'ユーザーを削除',
+      message: `「${student.name}」を削除しますか？`,
+      confirmLabel: '削除する',
+      danger: true,
+      onConfirm: () => {
+        setModal({
+          title: '本当に削除しますか？',
+          message: `この操作は元に戻せません。\n本当に「${student.name}」を完全に削除してよろしいですか？`,
+          confirmLabel: '完全に削除する',
+          danger: true,
+          onConfirm: () => {
+            startDelete(async () => {
+              await deleteStudent(student.id)
+            })
+          },
+        })
+      },
     })
   }
 
   function handleSetRole(role: 'admin' | 'viewer' | null) {
     if (role === studentRole) return
-    if (role === null && !window.confirm(`「${student.name}」の管理者権限を取り消しますか？`)) return
-    setAdminError(null)
-    startAdmin(async () => {
-      const result = await setAdminRole(student.id, role)
-      if (result?.error) setAdminError(result.error)
+    const roleLabels: Record<string, string> = { admin: '管理者', viewer: '閲覧者' }
+    const newLabel = role ? roleLabels[role] : '権限なし'
+    setModal({
+      title: '権限を変更',
+      message: `「${student.name}」の権限を「${newLabel}」に変更しますか？`,
+      confirmLabel: '変更する',
+      onConfirm: () => {
+        setAdminError(null)
+        startAdmin(async () => {
+          const result = await setAdminRole(student.id, role)
+          if (result?.error) setAdminError(result.error)
+        })
+      },
     })
   }
 
@@ -303,6 +367,8 @@ function StudentEditFormInner({
           </button>
         </div>
       )}
+
+      {modal && <Modal config={modal} onClose={() => setModal(null)} />}
     </form>
   )
 }
