@@ -24,7 +24,6 @@ export default async function StudentDetailPage({
   const supabase = await createClient()
   const adminClient = createAdminClient()
 
-  // getUser・params・adminsテーブル を並列取得
   const [{ data: { user } }, { id }, { data: dbAdmins }] = await Promise.all([
     supabase.auth.getUser(),
     params,
@@ -47,18 +46,12 @@ export default async function StudentDetailPage({
   const today = getJSTToday()
   const endDate = addDays(today, 14)
 
-  // 寮生情報・authLink・申告データ を並列取得
-  const [{ data: student }, { data: authLink }, { data: declarations }] = await Promise.all([
+  const [{ data: student }, { data: declarations }] = await Promise.all([
     adminClient
       .from('students')
       .select('id, name, furigana, phone, dormitory, enrollment_year, birth_date, room_number')
       .eq('id', id)
       .single(),
-    adminClient
-      .from('student_auth_links')
-      .select('auth_uid')
-      .eq('student_id', id)
-      .maybeSingle(),
     adminClient
       .from('meal_declarations')
       .select('date, breakfast, dinner')
@@ -68,12 +61,6 @@ export default async function StudentDetailPage({
   ])
 
   if (!student) notFound()
-
-  const hasAuthLink = !!authLink
-  const studentRole = hasAuthLink
-    ? (dbAdmins?.find(a => a.auth_uid === authLink!.auth_uid)?.role as 'admin' | 'viewer' | undefined
-        ?? (envAdminUids.includes(authLink!.auth_uid) ? 'admin' : null))
-    : null
 
   const declarationMap: Record<string, { breakfast: boolean; dinner: boolean }> = {}
   declarations?.forEach(d => {
@@ -97,26 +84,22 @@ export default async function StudentDetailPage({
           <div className="bg-white rounded-xl shadow-sm p-5">
             <StudentEditForm
               student={student}
-              hasAuthLink={hasAuthLink}
-              studentRole={studentRole}
               isViewer={isCurrentUserViewer}
             />
           </div>
 
-          {!studentRole && (
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
-                <span className="text-sm font-bold text-gray-700">食事申告（代理変更）</span>
-                <span className="text-xs text-gray-400 ml-2">締切済みの日付も変更できます</span>
-              </div>
-              <AdminMealCalendar
-                studentId={student.id}
-                declarations={declarationMap}
-                today={today}
-                readOnly={isCurrentUserViewer}
-              />
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+              <span className="text-sm font-bold text-gray-700">食事申告（代理変更）</span>
+              <span className="text-xs text-gray-400 ml-2">締切済みの日付も変更できます</span>
             </div>
-          )}
+            <AdminMealCalendar
+              studentId={student.id}
+              declarations={declarationMap}
+              today={today}
+              readOnly={isCurrentUserViewer}
+            />
+          </div>
         </div>
       </div>
     </div>

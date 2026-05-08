@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
+import AdminMgmt from './components/AdminMgmt'
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土']
 
@@ -28,10 +29,12 @@ export default async function AdminPage() {
   const supabase = await createClient()
   const adminClient = createAdminClient()
 
-  // getUser と adminsテーブル取得 を並列実行
-  const [{ data: { user } }, { data: dbAdmins }] = await Promise.all([
+  const [{ data: { user } }, { data: dbAdmins }, { data: pendingAdmins }] = await Promise.all([
     supabase.auth.getUser(),
-    adminClient.from('admins').select('auth_uid, role'),
+    adminClient.from('admins').select('auth_uid, name, role'),
+    adminClient.from('pending_admins')
+      .select('auth_uid, name, furigana, phone, requested_at')
+      .order('requested_at', { ascending: true }),
   ])
   if (!user) redirect('/login')
 
@@ -42,44 +45,30 @@ export default async function AdminPage() {
 
   if (!allAdminUids.includes(user.id)) redirect('/')
 
+  const isCurrentUserViewer =
+    !envAdminUids.includes(user.id) &&
+    dbAdmins?.find(a => a.auth_uid === user.id)?.role === 'viewer'
+
   const today = getJSTToday()
   const dates = Array.from({ length: 15 }, (_, i) => addDays(today, i))
   const endDate = dates[dates.length - 1]
 
-  // adminリンク と 申告データ を並列取得
-  const [{ data: adminLinks }, { data: declarations }] = await Promise.all([
-    allAdminUids.length > 0
-      ? adminClient.from('student_auth_links').select('auth_uid, student_id').in('auth_uid', allAdminUids)
-      : Promise.resolve({ data: [] as { auth_uid: string; student_id: string }[] }),
-    adminClient.from('meal_declarations').select('student_id, date, breakfast, dinner')
-      .gte('date', today).lte('date', endDate),
+  const [{ data: students }, { data: declarations }] = await Promise.all([
+    adminClient
+      .from('students')
+      .select('id, name, dormitory')
+      .order('enrollment_year', { ascending: true })
+      .order('furigana', { ascending: true }),
+    adminClient
+      .from('meal_declarations')
+      .select('student_id, date, breakfast, dinner')
+      .gte('date', today)
+      .lte('date', endDate),
   ])
 
-  const adminStudentIds = adminLinks?.map(l => l.student_id) ?? []
-  const dbAdminLinks = adminLinks?.filter(l => dbAdminUids.includes(l.auth_uid)) ?? []
-
-  let studentsQuery = adminClient
-    .from('students')
-    .select('id, name, dormitory')
-    .order('enrollment_year', { ascending: true })
-    .order('furigana', { ascending: true })
-  if (adminStudentIds.length > 0) {
-    studentsQuery = studentsQuery.not('id', 'in', `(${adminStudentIds.join(',')})`)
-  }
-
-  // 寮生一覧 と 管理者寮生情報 を並列取得
-  const [{ data: students }, { data: dbAdminStudents }] = await Promise.all([
-    studentsQuery,
-    dbAdminLinks.length > 0
-      ? adminClient.from('students').select('id, name').in('id', dbAdminLinks.map(l => l.student_id))
-      : Promise.resolve({ data: [] as { id: string; name: string }[] }),
-  ])
-
-  const dbAdminList = dbAdminLinks.map(l => ({
-    studentId: l.student_id,
-    name: dbAdminStudents?.find(s => s.id === l.student_id)?.name ?? '（氏名不明）',
-    role: (dbAdmins?.find(a => a.auth_uid === l.auth_uid)?.role ?? 'admin') as 'admin' | 'viewer',
-  }))
+  const managedAdmins = (dbAdmins ?? [])
+    .filter(a => !envAdminUids.includes(a.auth_uid))
+    .map(a => ({ auth_uid: a.auth_uid, name: a.name ?? null, role: a.role as 'admin' | 'viewer' }))
 
   const declMap = new Map(
     declarations?.map(d => [`${d.student_id}:${d.date}`, d]) ?? []
@@ -107,6 +96,12 @@ export default async function AdminPage() {
       </header>
 
       <div className="p-4 space-y-6">
+        <AdminMgmt
+          pendingAdmins={pendingAdmins ?? []}
+          managedAdmins={managedAdmins}
+          isViewer={isCurrentUserViewer ?? false}
+        />
+
         {Object.entries(dormGroups).map(([dormitory, dStudents]) => (
           <div key={dormitory} className="bg-[#ebe7df] rounded-xl shadow-sm overflow-hidden">
             <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
@@ -192,41 +187,6 @@ export default async function AdminPage() {
             </div>
           </div>
         ))}
-
-        {dbAdminList.length > 0 && (
-          <div className="bg-[#ebe7df] rounded-xl shadow-sm overflow-hidden">
-            <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
-              <span className="text-sm font-bold text-gray-700">管理者</span>
-            </div>
-            <ul className="divide-y divide-gray-100">
-              {dbAdminList.map(a => (
-                <li key={a.studentId}>
-                  <Link
-                    href={`/admin/students/${a.studentId}`}
-                    className="px-4 py-3 flex items-center justify-between group hover:bg-white/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-800">{a.name}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        a.role === 'admin'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {a.role === 'admin' ? '管理者' : '閲覧者'}
-                      </span>
-                    </div>
-                    <span className="flex items-center gap-1 text-xs text-blue-600 transition-colors group-hover:text-blue-800">
-                      権限を管理
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5">
-                        <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
-                      </svg>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
     </div>
   )

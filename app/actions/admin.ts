@@ -19,10 +19,7 @@ export type UpdateStudentState = {
   }
 } | null
 
-export type AdminGrantState = {
-  success?: boolean
-  error?: string
-} | null
+export type AdminActionState = { error?: string } | null
 
 async function checkAdmin(): Promise<boolean> {
   const supabase = await createClient()
@@ -128,42 +125,88 @@ export async function deleteStudent(studentId: string): Promise<void> {
   redirect('/admin')
 }
 
-export async function setAdminRole(
-  studentId: string,
-  role: 'admin' | 'viewer' | null
-): Promise<AdminGrantState> {
+export async function approvePendingAdmin(
+  authUid: string,
+  role: 'admin' | 'viewer'
+): Promise<AdminActionState> {
   if (!(await checkAdmin())) return { error: '権限がありません' }
 
   const admin = createAdminClient()
-  const { data: link } = await admin
-    .from('student_auth_links')
-    .select('auth_uid')
-    .eq('student_id', studentId)
-    .maybeSingle()
+  const { data: pending } = await admin
+    .from('pending_admins')
+    .select('name, furigana, phone')
+    .eq('auth_uid', authUid)
+    .single()
 
-  if (!link) return { error: 'このユーザーはまだログインしていないため設定できません' }
+  if (!pending) return { error: '申請が見つかりません' }
+
+  const { error } = await admin.from('admins').insert({
+    auth_uid: authUid,
+    role,
+    name: pending.name,
+    furigana: pending.furigana,
+    phone: pending.phone,
+  })
+
+  if (error) {
+    console.error('[admin] approvePendingAdmin error:', JSON.stringify(error))
+    return { error: '承認に失敗しました' }
+  }
+
+  await admin.from('pending_admins').delete().eq('auth_uid', authUid)
+  revalidatePath('/admin')
+  return null
+}
+
+export async function denyPendingAdmin(authUid: string): Promise<AdminActionState> {
+  if (!(await checkAdmin())) return { error: '権限がありません' }
+
+  const admin = createAdminClient()
+  await admin.from('pending_admins').delete().eq('auth_uid', authUid)
+  revalidatePath('/admin')
+  return null
+}
+
+export async function removeAdmin(authUid: string): Promise<AdminActionState> {
+  if (!(await checkAdmin())) return { error: '権限がありません' }
 
   const envAdminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
     .split(',').map(s => s.trim()).filter(Boolean)
-  if (envAdminUids.includes(link.auth_uid)) {
+  if (envAdminUids.includes(authUid)) {
     return { error: '環境変数で設定された管理者はUIから変更できません' }
   }
 
-  if (role === null) {
-    await admin.from('admins').delete().eq('auth_uid', link.auth_uid)
-  } else {
-    const { error } = await admin
-      .from('admins')
-      .upsert({ auth_uid: link.auth_uid, role })
-    if (error) {
-      console.error('[admin] setAdminRole error:', JSON.stringify(error))
-      return { error: '権限の変更に失敗しました' }
-    }
+  const admin = createAdminClient()
+  await admin.from('admins').delete().eq('auth_uid', authUid)
+  revalidatePath('/admin')
+  return null
+}
+
+export async function updateAdminRole(
+  authUid: string,
+  role: 'admin' | 'viewer'
+): Promise<AdminActionState> {
+  if (!(await checkAdmin())) return { error: '権限がありません' }
+
+  const envAdminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
+    .split(',').map(s => s.trim()).filter(Boolean)
+  if (envAdminUids.includes(authUid)) {
+    return { error: '環境変数で設定された管理者はUIから変更できません' }
+  }
+
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('admins')
+    .update({ role })
+    .eq('auth_uid', authUid)
+
+  if (error) {
+    console.error('[admin] updateAdminRole error:', JSON.stringify(error))
+    return { error: '権限の変更に失敗しました' }
   }
 
   revalidatePath('/admin')
-  revalidatePath(`/admin/students/${studentId}`)
-  return { success: true }
+  return null
 }
 
 export async function adminUpsertMealDeclaration(

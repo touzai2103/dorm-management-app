@@ -28,13 +28,17 @@ export default async function Home() {
 
   // adminsテーブル確認 と authLink取得 を並列実行
   const adminClient = createAdminClient()
-  const [{ data: adminRecord }, { data: authLink }] = await Promise.all([
+  const [{ data: adminRecord }, { data: authLink }, { data: pendingAdmin }] = await Promise.all([
     adminClient.from('admins').select('auth_uid').eq('auth_uid', user.id).maybeSingle(),
     supabase.from('student_auth_links').select('student_id').eq('auth_uid', user.id).single(),
+    adminClient.from('pending_admins').select('auth_uid').eq('auth_uid', user.id).maybeSingle(),
   ])
 
   if (adminRecord) redirect('/admin')
-  if (!authLink) redirect('/register')
+  if (!authLink) {
+    if (pendingAdmin) redirect('/pending')
+    redirect('/onboarding')
+  }
 
   const today = getJSTToday()
   const endDate = addDays(today, 14)
