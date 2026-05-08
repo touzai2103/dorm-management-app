@@ -104,29 +104,32 @@ export default async function AdminPage() {
           {[today, addDays(today, 1)].map((date, i) => {
             const { short, dow } = formatDateLabel(date)
             return (
-              <div key={date} className="bg-white rounded-xl shadow-sm p-4 space-y-3">
-                <div>
-                  <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full mb-1.5 ${
+              <div key={date} className="bg-white rounded-2xl shadow-sm p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold shrink-0 ${
                     i === 0 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
                   }`}>
                     {i === 0 ? '今日' : '明日'}
-                  </span>
-                  <div className="text-xl font-bold text-gray-800 leading-tight">{short}（{dow}）</div>
+                  </div>
+                  <div>
+                    <div className="text-4xl font-bold text-gray-900 leading-none">{short}</div>
+                    <div className="text-sm text-gray-500 mt-1">（{dow}）</div>
+                  </div>
                 </div>
                 {Object.entries(dormGroups).map(([dorm, dStudents]) => {
                   const bf = dStudents.filter(s => declMap.get(`${s.id}:${date}`)?.breakfast).length
                   const dn = dStudents.filter(s => declMap.get(`${s.id}:${date}`)?.dinner).length
                   return (
-                    <div key={dorm}>
-                      <div className="text-[10px] text-gray-400 mb-1">{dorm}</div>
-                      <div className="grid grid-cols-2 gap-1.5">
-                        <div className="bg-gray-50 rounded-lg py-2 text-center">
-                          <div className="text-2xl font-bold text-gray-800 leading-none">{bf}</div>
-                          <div className="text-[10px] text-gray-400 mt-1">朝食</div>
+                    <div key={dorm} className="border-t border-gray-100 pt-3 mt-3">
+                      <div className="text-xs text-gray-400 mb-2">{dorm}</div>
+                      <div className="flex gap-4">
+                        <div>
+                          <div className="text-4xl font-bold text-gray-800 leading-none">{bf}</div>
+                          <div className="text-xs text-gray-400 mt-1">朝食</div>
                         </div>
-                        <div className="bg-gray-50 rounded-lg py-2 text-center">
-                          <div className="text-2xl font-bold text-gray-800 leading-none">{dn}</div>
-                          <div className="text-[10px] text-gray-400 mt-1">夕食</div>
+                        <div>
+                          <div className="text-4xl font-bold text-gray-800 leading-none">{dn}</div>
+                          <div className="text-xs text-gray-400 mt-1">夕食</div>
                         </div>
                       </div>
                     </div>
