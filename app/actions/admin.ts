@@ -233,6 +233,7 @@ export async function denyPendingAdmin(authUid: string): Promise<AdminActionStat
 
   const admin = createAdminClient()
   await admin.from('pending_admins').delete().eq('auth_uid', authUid)
+  await admin.auth.admin.deleteUser(authUid)
   revalidatePath('/admin')
   return null
 }
