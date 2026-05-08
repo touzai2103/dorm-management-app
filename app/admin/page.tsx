@@ -113,7 +113,7 @@ export default async function AdminPage() {
                   </div>
                   <div>
                     <div className="text-4xl font-bold text-gray-900 leading-none">{short}</div>
-                    <div className="text-sm text-gray-500 mt-1">（{dow}）</div>
+                    <div className="text-sm text-gray-500 mt-1">({dow})</div>
                   </div>
                 </div>
                 {Object.entries(dormGroups).map(([dorm, dStudents]) => {
@@ -122,7 +122,7 @@ export default async function AdminPage() {
                   return (
                     <div key={dorm} className="border-t border-gray-100 pt-3 mt-3">
                       <div className="text-xs text-gray-400 mb-2">{dorm}</div>
-                      <div className="flex gap-4">
+                      <div className="grid grid-cols-2 text-center">
                         <div>
                           <div className="text-4xl font-bold text-gray-800 leading-none">{bf}</div>
                           <div className="text-xs text-gray-400 mt-1">朝食</div>
