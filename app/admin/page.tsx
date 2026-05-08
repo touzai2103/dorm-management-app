@@ -83,7 +83,7 @@ export default async function AdminPage() {
     <div className="min-h-screen bg-[#a9b4ba]">
       <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-0 z-20 flex items-center">
         <div className="flex items-center gap-2">
-          <h1 className="text-base font-bold text-gray-900">管理者画面</h1>
+          <h1 className="text-base font-bold text-gray-900">学生寮 食事申告アプリ 管理者画面</h1>
           {(pendingAdmins?.length ?? 0) > 0 && (
             <span className="text-xs bg-amber-500 text-white rounded-full px-2 py-0.5 font-medium">
               {pendingAdmins!.length}件承認待ち
