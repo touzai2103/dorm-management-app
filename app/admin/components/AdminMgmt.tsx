@@ -19,6 +19,7 @@ type PendingAdmin = {
 type ManagedAdmin = {
   auth_uid: string
   name: string | null
+  furigana: string
   role: 'admin' | 'viewer'
 }
 

@@ -30,7 +30,7 @@ export default async function AdminPage() {
 
   const [{ data: { user } }, { data: dbAdmins }, { data: pendingAdmins }] = await Promise.all([
     supabase.auth.getUser(),
-    adminClient.from('admins').select('auth_uid, name, role'),
+    adminClient.from('admins').select('auth_uid, name, furigana, role'),
     adminClient.from('pending_admins')
       .select('auth_uid, name, furigana, phone, requested_at')
       .order('requested_at', { ascending: true }),
@@ -67,7 +67,11 @@ export default async function AdminPage() {
 
   const managedAdmins = (dbAdmins ?? [])
     .filter(a => !envAdminUids.includes(a.auth_uid))
-    .map(a => ({ auth_uid: a.auth_uid, name: a.name ?? null, role: a.role as 'admin' | 'viewer' }))
+    .map(a => ({ auth_uid: a.auth_uid, name: a.name ?? null, furigana: a.furigana ?? '', role: a.role as 'admin' | 'viewer' }))
+    .sort((a, b) => {
+      if (a.role !== b.role) return a.role === 'admin' ? -1 : 1
+      return a.furigana.localeCompare(b.furigana, 'ja')
+    })
 
   const declMap = new Map(
     declarations?.map(d => [`${d.student_id}:${d.date}`, d]) ?? []
