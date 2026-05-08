@@ -223,7 +223,10 @@ export async function approvePendingAdmin(
     return { error: '承認に失敗しました' }
   }
 
-  await admin.from('pending_admins').delete().eq('auth_uid', authUid)
+  const { error: deleteError } = await admin.from('pending_admins').delete().eq('auth_uid', authUid)
+  if (deleteError) {
+    console.error('[admin] approvePendingAdmin: pending_admins delete failed', JSON.stringify(deleteError))
+  }
   revalidatePath('/admin')
   return null
 }
