@@ -99,6 +99,39 @@ export default async function AdminPage() {
       </header>
 
       <div className="p-4 space-y-6">
+        {/* モバイルのみ表示：今日・明日のサマリー */}
+        <div className="md:hidden grid grid-cols-2 gap-3">
+          {[today, addDays(today, 1)].map((date, i) => {
+            const { short, dow } = formatDateLabel(date)
+            return (
+              <div key={date} className="bg-white rounded-xl shadow-sm p-4 space-y-3">
+                <div className="text-xs font-bold text-gray-500">
+                  {i === 0 ? '今日' : '明日'}&nbsp;{short}（{dow}）
+                </div>
+                {Object.entries(dormGroups).map(([dorm, dStudents]) => {
+                  const bf = dStudents.filter(s => declMap.get(`${s.id}:${date}`)?.breakfast).length
+                  const dn = dStudents.filter(s => declMap.get(`${s.id}:${date}`)?.dinner).length
+                  return (
+                    <div key={dorm}>
+                      <div className="text-[10px] text-gray-400 mb-1">{dorm}</div>
+                      <div className="flex gap-3 items-end">
+                        <div>
+                          <div className="text-3xl font-bold text-gray-800 leading-none">{bf}</div>
+                          <div className="text-[10px] text-gray-400 mt-0.5">朝食</div>
+                        </div>
+                        <div>
+                          <div className="text-3xl font-bold text-gray-800 leading-none">{dn}</div>
+                          <div className="text-[10px] text-gray-400 mt-0.5">夕食</div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })}
+        </div>
+
         {Object.entries(dormGroups).map(([dormitory, dStudents]) => (
           <div key={dormitory} className="bg-[#ebe7df] rounded-xl shadow-sm overflow-hidden">
             <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
