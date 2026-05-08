@@ -111,7 +111,7 @@ export default async function AdminPage() {
                   }`}>
                     {i === 0 ? '今日' : '明日'}
                   </div>
-                  <div>
+                  <div className="flex-1 flex flex-col items-center">
                     <div className="text-4xl font-bold text-gray-900 leading-none">{short}</div>
                     <div className="text-sm text-gray-500 mt-1">({dow})</div>
                   </div>
