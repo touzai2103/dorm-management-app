@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import AdminMgmt from './components/AdminMgmt'
@@ -84,7 +83,6 @@ export default async function AdminPage() {
     <div className="min-h-screen bg-[#a9b4ba]">
       <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-0 z-20 flex items-center">
         <div className="flex items-center gap-2">
-          <Image src="/logo.png" alt="ロゴ" width={28} height={28} />
           <h1 className="text-base font-bold text-gray-900">管理者画面</h1>
           {(pendingAdmins?.length ?? 0) > 0 && (
             <span className="text-xs bg-amber-500 text-white rounded-full px-2 py-0.5 font-medium">
