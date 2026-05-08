@@ -63,7 +63,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-lg mx-auto">
-        <header className="bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-10 flex items-center justify-between">
+        <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-0 z-10 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Image src="/logo.png" alt="ロゴ" width={28} height={28} />
             <div>

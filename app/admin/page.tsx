@@ -82,7 +82,7 @@ export default async function AdminPage() {
 
   return (
     <div className="min-h-screen bg-[#a9b4ba]">
-      <header className="bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-20 flex items-center">
+      <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-0 z-20 flex items-center">
         <div className="flex items-center gap-2">
           <Image src="/logo.png" alt="ロゴ" width={28} height={28} />
           <h1 className="text-base font-bold text-gray-900">管理者画面</h1>

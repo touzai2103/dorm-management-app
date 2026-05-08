@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import { registerStudent, type RegisterState } from '@/app/actions/register'
+import DateWheelPicker from '@/app/components/DateWheelPicker'
 
 const currentYear = new Date().getFullYear()
 const enrollmentYears = Array.from({ length: 6 }, (_, i) => currentYear - 4 + i).reverse()
@@ -140,26 +141,13 @@ export default function RegisterForm() {
       </div>
 
       <div>
-        <label
-          htmlFor="birth_date"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
+        <label className="block text-sm font-medium text-gray-700 mb-1">
           生年月日<span className="text-red-500 ml-0.5">*</span>
         </label>
-        <input
-          id="birth_date"
+        <DateWheelPicker
           name="birth_date"
-          type="date"
-          required
-          className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors ${
-            state?.errors?.birth_date
-              ? 'border-red-400 focus:ring-red-400'
-              : 'border-gray-300 focus:ring-blue-500'
-          }`}
+          error={state?.errors?.birth_date}
         />
-        {state?.errors?.birth_date && (
-          <p className="mt-1 text-xs text-red-600">{state.errors.birth_date}</p>
-        )}
       </div>
 
       <button

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useActionState, useTransition, useRef } from 'react'
 import { updateStudent, deleteStudent, type UpdateStudentState } from '@/app/actions/admin'
+import DateWheelPicker from '@/app/components/DateWheelPicker'
 
 type ModalConfig = {
   title: string
@@ -239,24 +240,14 @@ function StudentEditFormInner({
             )}
           </div>
           <div>
-            <label htmlFor="birth_date" className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               生年月日<span className="text-red-500 ml-0.5">*</span>
             </label>
-            <input
-              id="birth_date"
+            <DateWheelPicker
               name="birth_date"
-              type="date"
-              required
               defaultValue={student.birth_date}
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                state?.errors?.birth_date
-                  ? 'border-red-400 focus:ring-red-400'
-                  : 'border-gray-300 focus:ring-blue-500'
-              }`}
+              error={state?.errors?.birth_date}
             />
-            {state?.errors?.birth_date && (
-              <p className="mt-1 text-xs text-red-600">{state.errors.birth_date}</p>
-            )}
           </div>
           <Field
             label="部屋番号"
