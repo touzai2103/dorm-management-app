@@ -86,6 +86,11 @@ export default async function AdminPage() {
         <div className="flex items-center gap-2">
           <Image src="/logo.png" alt="ロゴ" width={28} height={28} />
           <h1 className="text-base font-bold text-gray-900">管理者画面</h1>
+          {(pendingAdmins?.length ?? 0) > 0 && (
+            <span className="text-xs bg-amber-500 text-white rounded-full px-2 py-0.5 font-medium">
+              {pendingAdmins!.length}件承認待ち
+            </span>
+          )}
         </div>
         <a
           href="/api/admin/csv"
@@ -96,12 +101,6 @@ export default async function AdminPage() {
       </header>
 
       <div className="p-4 space-y-6">
-        <AdminMgmt
-          pendingAdmins={pendingAdmins ?? []}
-          managedAdmins={managedAdmins}
-          isViewer={isCurrentUserViewer ?? false}
-        />
-
         {Object.entries(dormGroups).map(([dormitory, dStudents]) => (
           <div key={dormitory} className="bg-[#ebe7df] rounded-xl shadow-sm overflow-hidden">
             <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
@@ -187,6 +186,12 @@ export default async function AdminPage() {
             </div>
           </div>
         ))}
+
+        <AdminMgmt
+          pendingAdmins={pendingAdmins ?? []}
+          managedAdmins={managedAdmins}
+          isViewer={isCurrentUserViewer ?? false}
+        />
       </div>
     </div>
   )
