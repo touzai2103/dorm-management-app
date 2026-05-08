@@ -107,12 +107,14 @@ function WheelColumn({
   )
 }
 
+const thisYear = new Date().getFullYear()
+
 export default function DateWheelPicker({
   name,
   defaultValue,
   error,
-  minYear = 2000,
-  maxYear = 2015,
+  minYear = thisYear - 20,
+  maxYear = thisYear - 10,
 }: {
   name: string
   defaultValue?: string
