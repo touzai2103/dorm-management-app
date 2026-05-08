@@ -126,9 +126,20 @@ export async function deleteStudent(studentId: string): Promise<void> {
   if (!(await checkAdmin())) return
 
   const admin = createAdminClient()
+
+  const { data: link } = await admin
+    .from('student_auth_links')
+    .select('auth_uid')
+    .eq('student_id', studentId)
+    .single()
+
   await admin.from('meal_declarations').delete().eq('student_id', studentId)
   await admin.from('student_auth_links').delete().eq('student_id', studentId)
   await admin.from('students').delete().eq('id', studentId)
+
+  if (link?.auth_uid) {
+    await admin.auth.admin.deleteUser(link.auth_uid)
+  }
 
   revalidatePath('/admin')
   redirect('/admin')
@@ -237,6 +248,7 @@ export async function removeAdmin(authUid: string): Promise<AdminActionState> {
 
   const admin = createAdminClient()
   await admin.from('admins').delete().eq('auth_uid', authUid)
+  await admin.auth.admin.deleteUser(authUid)
   revalidatePath('/admin')
   return null
 }
