@@ -21,6 +21,15 @@ export type UpdateStudentState = {
 
 export type AdminActionState = { error?: string } | null
 
+export type UpdateStaffState = {
+  success?: boolean
+  errors?: {
+    name?: string
+    furigana?: string
+    phone?: string
+  }
+} | null
+
 async function checkAdmin(): Promise<boolean> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -123,6 +132,56 @@ export async function deleteStudent(studentId: string): Promise<void> {
 
   revalidatePath('/admin')
   redirect('/admin')
+}
+
+export async function updateStaff(
+  _prev: UpdateStaffState,
+  formData: FormData
+): Promise<UpdateStaffState> {
+  if (!(await checkAdmin())) return { errors: { name: '権限がありません' } }
+
+  const authUid = formData.get('auth_uid') as string
+  const name = (formData.get('name') as string)?.trim().replace(/　/g, ' ')
+  const furigana = (formData.get('furigana') as string)?.trim()
+  const rawPhone = (formData.get('phone') as string) ?? ''
+  const phone = rawPhone.replace(/[-\s]/g, '')
+
+  const errors: NonNullable<UpdateStaffState>['errors'] = {}
+
+  if (!name || name.replace(/[\s　]/g, '').length === 0) {
+    errors.name = '氏名を入力してください'
+  } else if (name.length > 30) {
+    errors.name = '30文字以内で入力してください'
+  }
+
+  if (!furigana) {
+    errors.furigana = 'ふりがなを入力してください'
+  } else if (!/^[ぁ-んー\s　]+$/.test(furigana)) {
+    errors.furigana = 'ひらがなで入力してください'
+  }
+
+  if (!phone) {
+    errors.phone = '電話番号を入力してください'
+  } else if (!/^0\d{9,10}$/.test(phone)) {
+    errors.phone = '正しい携帯番号を入力してください（例: 09012345678）'
+  }
+
+  if (Object.keys(errors).length > 0) return { errors }
+
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('admins')
+    .update({ name, furigana, phone })
+    .eq('auth_uid', authUid)
+
+  if (error) {
+    console.error('[admin] updateStaff error:', JSON.stringify(error))
+    return { errors: { name: '更新に失敗しました。もう一度お試しください。' } }
+  }
+
+  revalidatePath('/admin')
+  revalidatePath(`/admin/staff/${authUid}`)
+  return { success: true }
 }
 
 export async function approvePendingAdmin(

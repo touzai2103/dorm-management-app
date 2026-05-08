@@ -1,11 +1,10 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import {
   approvePendingAdmin,
   denyPendingAdmin,
-  removeAdmin,
-  updateAdminRole,
   type AdminActionState,
 } from '@/app/actions/admin'
 
@@ -26,8 +25,6 @@ type ManagedAdmin = {
 type ModalState =
   | { type: 'approve'; authUid: string; name: string }
   | { type: 'deny'; authUid: string; name: string }
-  | { type: 'remove'; authUid: string; name: string }
-  | { type: 'role'; authUid: string; name: string; newRole: 'admin' | 'viewer' }
 
 function ApproveModal({
   name,
@@ -185,8 +182,11 @@ export default function AdminMgmt({
           </div>
           <ul className="divide-y divide-gray-100">
             {managedAdmins.map(a => (
-              <li key={a.auth_uid} className="px-4 py-3 space-y-2">
-                <div className="flex items-center justify-between">
+              <li key={a.auth_uid}>
+                <Link
+                  href={`/admin/staff/${a.auth_uid}`}
+                  className="px-4 py-3 flex items-center justify-between group hover:bg-white/50 transition-colors"
+                >
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-800">{a.name ?? '（氏名不明）'}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
@@ -197,40 +197,13 @@ export default function AdminMgmt({
                       {a.role === 'admin' ? '管理者' : '閲覧者'}
                     </span>
                   </div>
-                  {!isViewer && (
-                    <button
-                      type="button"
-                      onClick={() => setModal({ type: 'remove', authUid: a.auth_uid, name: a.name ?? '（氏名不明）' })}
-                      disabled={isPending}
-                      className="text-xs text-red-400 hover:text-red-600 disabled:opacity-60 transition-colors"
-                    >
-                      削除
-                    </button>
-                  )}
-                </div>
-                {!isViewer && (
-                  <div className="flex gap-2">
-                    {(['viewer', 'admin'] as const).map(role => (
-                      <button
-                        key={role}
-                        type="button"
-                        onClick={() => {
-                          if (a.role !== role) {
-                            setModal({ type: 'role', authUid: a.auth_uid, name: a.name ?? '（氏名不明）', newRole: role })
-                          }
-                        }}
-                        disabled={isPending || a.role === role}
-                        className={`flex-1 py-1.5 text-xs rounded-lg border transition-colors ${
-                          a.role === role
-                            ? 'bg-orange-500 text-white border-orange-500 font-medium cursor-default'
-                            : 'border-gray-200 text-gray-600 hover:bg-orange-50'
-                        } disabled:opacity-60`}
-                      >
-                        {role === 'viewer' ? '閲覧者' : '管理者'}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                  <span className="flex items-center gap-1 text-xs text-blue-600 transition-colors group-hover:text-blue-800">
+                    管理
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5">
+                      <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+                    </svg>
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>
@@ -256,25 +229,7 @@ export default function AdminMgmt({
           onConfirm={() => run(() => denyPendingAdmin(modal.authUid))}
         />
       )}
-      {modal?.type === 'remove' && (
-        <ConfirmModal
-          title="スタッフを削除"
-          message={`「${modal.name}」の管理者権限を削除しますか？`}
-          confirmLabel="削除する"
-          danger
-          onClose={() => setModal(null)}
-          onConfirm={() => run(() => removeAdmin(modal.authUid))}
-        />
-      )}
-      {modal?.type === 'role' && (
-        <ConfirmModal
-          title="権限を変更"
-          message={`「${modal.name}」の権限を「${modal.newRole === 'admin' ? '管理者' : '閲覧者'}」に変更しますか？`}
-          confirmLabel="変更する"
-          onClose={() => setModal(null)}
-          onConfirm={() => run(() => updateAdminRole(modal.authUid, modal.newRole))}
-        />
-      )}
+
     </>
   )
 }
