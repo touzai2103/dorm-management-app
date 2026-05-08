@@ -152,9 +152,9 @@ export default async function AdminPage() {
                       return (
                         <td key={date} className="border-r border-gray-200 p-0 text-center">
                           <div className="flex justify-center items-center w-full py-1.5 text-sm">
-                            <span className={`flex-1 text-center ${bf > 0 ? 'text-red-500 font-bold' : 'text-gray-200'}`}>{bf}</span>
-                            <span className="text-gray-200">|</span>
-                            <span className={`flex-1 text-center ${dn > 0 ? 'text-red-500 font-bold' : 'text-gray-200'}`}>{dn}</span>
+                            <span className={`flex-1 text-center ${bf > 0 ? 'text-red-500 font-bold' : 'text-gray-400'}`}>{bf}</span>
+                            <span className="text-gray-400">|</span>
+                            <span className={`flex-1 text-center ${dn > 0 ? 'text-red-500 font-bold' : 'text-gray-400'}`}>{dn}</span>
                           </div>
                         </td>
                       )
@@ -174,11 +174,11 @@ export default async function AdminPage() {
                         return (
                           <td key={date} className="border-r border-gray-100 p-0 text-center">
                             <div className="flex justify-center items-center w-full py-1.5 text-sm">
-                              <span className={`flex-1 text-center ${decl?.breakfast ? 'text-red-500 font-bold' : 'text-gray-200'}`}>
+                              <span className={`flex-1 text-center ${decl?.breakfast ? 'text-red-500 font-bold' : 'text-gray-400'}`}>
                                 {decl?.breakfast ? '○' : '✕'}
                               </span>
-                              <span className="text-gray-200">|</span>
-                              <span className={`flex-1 text-center ${decl?.dinner ? 'text-red-500 font-bold' : 'text-gray-200'}`}>
+                              <span className="text-gray-400">|</span>
+                              <span className={`flex-1 text-center ${decl?.dinner ? 'text-red-500 font-bold' : 'text-gray-400'}`}>
                                 {decl?.dinner ? '○' : '✕'}
                               </span>
                             </div>
