@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useActionState, useTransition, useRef } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   updateStaff,
@@ -70,34 +70,31 @@ function StaffEditFormInner({
   isViewer: boolean
 }) {
   const router = useRouter()
-  const [state, action, pending] = useActionState<UpdateStaffState, FormData>(
-    updateStaff,
-    null
-  )
+  const [pending, startUpdate] = useTransition()
   const [rolePending, startRole] = useTransition()
   const [deletePending, startDelete] = useTransition()
+  const [errors, setErrors] = useState<NonNullable<UpdateStaffState>['errors']>(undefined)
+  const [saved, setSaved] = useState(false)
   const [roleError, setRoleError] = useState<string | null>(null)
   const [modal, setModal] = useState<ModalConfig | null>(null)
-  const [saved, setSaved] = useState(false)
-  const formRef = useRef<HTMLFormElement>(null)
 
-  useEffect(() => {
-    const form = formRef.current
-    if (!form) return
-    const original = form.reset.bind(form)
-    form.reset = () => {}
-    return () => { form.reset = original }
-  }, [])
-
-  useEffect(() => {
-    if (!state?.success) return
-    setSaved(true)
-    const timer = setTimeout(() => {
-      setSaved(false)
-      router.refresh()
-    }, 2500)
-    return () => clearTimeout(timer)
-  }, [state?.success])
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    startUpdate(async () => {
+      const result = await updateStaff(null, formData)
+      if (result?.success) {
+        setErrors(undefined)
+        setSaved(true)
+        setTimeout(() => {
+          setSaved(false)
+          router.refresh()
+        }, 2500)
+      } else {
+        setErrors(result?.errors)
+      }
+    })
+  }
 
   function handleSetRole(role: 'admin' | 'viewer') {
     if (role === staff.role) return
@@ -140,122 +137,120 @@ function StaffEditFormInner({
   }
 
   return (
-    <>
-      <form ref={formRef} action={action} className="space-y-4">
-        <input type="hidden" name="auth_uid" value={staff.auth_uid} />
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <input type="hidden" name="auth_uid" value={staff.auth_uid} />
 
-        {isViewer && (
-          <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-500">
-            閲覧専用モードです
-          </div>
-        )}
-
-        <fieldset disabled={isViewer} className={isViewer ? 'opacity-70' : ''}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                氏名<span className="text-red-500 ml-0.5">*</span>
-              </label>
-              <p className="mb-1 text-xs text-gray-400">姓と名の間に半角スペースを入力してください</p>
-              <input
-                id="name" name="name" type="text"
-                defaultValue={staff.name}
-                placeholder="山田 太郎"
-                required
-                className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                  state?.errors?.name ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
-                }`}
-              />
-              {state?.errors?.name && <p className="mt-1 text-xs text-red-600">{state.errors.name}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="furigana" className="block text-sm font-medium text-gray-700 mb-1">
-                ふりがな<span className="text-red-500 ml-0.5">*</span>
-              </label>
-              <input
-                id="furigana" name="furigana" type="text"
-                defaultValue={staff.furigana}
-                placeholder="やまだ たろう"
-                required
-                className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                  state?.errors?.furigana ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
-                }`}
-              />
-              {state?.errors?.furigana && <p className="mt-1 text-xs text-red-600">{state.errors.furigana}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                携帯番号<span className="text-red-500 ml-0.5">*</span>
-              </label>
-              <p className="mb-1 text-xs text-gray-400">ハイフン不要</p>
-              <input
-                id="phone" name="phone" type="tel" inputMode="tel"
-                defaultValue={staff.phone}
-                placeholder="09012345678"
-                required
-                className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                  state?.errors?.phone ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
-                }`}
-              />
-              {state?.errors?.phone && <p className="mt-1 text-xs text-red-600">{state.errors.phone}</p>}
-            </div>
-          </div>
-        </fieldset>
-
-        {!isViewer && (
-          <button
-            type="submit"
-            disabled={pending || saved}
-            className={`w-full rounded-xl py-3 text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
-              saved
-                ? 'bg-green-600 text-white'
-                : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
-            }`}
-          >
-            {pending ? '更新中...' : saved ? '✓ 更新しました' : '更新する'}
-          </button>
-        )}
-
-        <div className="border-t border-gray-100 pt-4 space-y-3">
-          <p className="text-sm font-medium text-gray-700">権限</p>
-          <div className="flex gap-2">
-            {ROLE_OPTIONS.map(({ value, label }) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => handleSetRole(value)}
-                disabled={isViewer || rolePending || staff.role === value}
-                className={`flex-1 py-2 text-xs rounded-xl border transition-colors ${
-                  staff.role === value
-                    ? 'bg-orange-500 text-white border-orange-500 font-medium'
-                    : 'border-gray-200 text-gray-600 hover:bg-orange-50'
-                } disabled:opacity-60 disabled:cursor-not-allowed`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          {roleError && <p className="text-xs text-red-600">{roleError}</p>}
+      {isViewer && (
+        <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-500">
+          閲覧専用モードです
         </div>
+      )}
 
-        {!isViewer && (
-          <div className="border-t border-gray-100 pt-4">
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={deletePending}
-              className="w-full border border-red-300 text-red-600 rounded-xl py-3 text-sm font-medium hover:bg-red-50 active:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-            >
-              {deletePending ? '削除中...' : 'このスタッフを削除する'}
-            </button>
+      <fieldset disabled={isViewer} className={isViewer ? 'opacity-70' : ''}>
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              氏名<span className="text-red-500 ml-0.5">*</span>
+            </label>
+            <p className="mb-1 text-xs text-gray-400">姓と名の間に半角スペースを入力してください</p>
+            <input
+              id="name" name="name" type="text"
+              defaultValue={staff.name}
+              placeholder="山田 太郎"
+              required
+              className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
+                errors?.name ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
+              }`}
+            />
+            {errors?.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
           </div>
-        )}
 
-        {modal && <Modal config={modal} onClose={() => setModal(null)} />}
-      </form>
-    </>
+          <div>
+            <label htmlFor="furigana" className="block text-sm font-medium text-gray-700 mb-1">
+              ふりがな<span className="text-red-500 ml-0.5">*</span>
+            </label>
+            <input
+              id="furigana" name="furigana" type="text"
+              defaultValue={staff.furigana}
+              placeholder="やまだ たろう"
+              required
+              className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
+                errors?.furigana ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
+              }`}
+            />
+            {errors?.furigana && <p className="mt-1 text-xs text-red-600">{errors.furigana}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+              携帯番号<span className="text-red-500 ml-0.5">*</span>
+            </label>
+            <p className="mb-1 text-xs text-gray-400">ハイフン不要</p>
+            <input
+              id="phone" name="phone" type="tel" inputMode="tel"
+              defaultValue={staff.phone}
+              placeholder="09012345678"
+              required
+              className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
+                errors?.phone ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
+              }`}
+            />
+            {errors?.phone && <p className="mt-1 text-xs text-red-600">{errors.phone}</p>}
+          </div>
+        </div>
+      </fieldset>
+
+      {!isViewer && (
+        <button
+          type="submit"
+          disabled={pending || saved}
+          className={`w-full rounded-xl py-3 text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
+            saved
+              ? 'bg-green-600 text-white'
+              : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
+          }`}
+        >
+          {pending ? '更新中...' : saved ? '✓ 更新しました' : '更新する'}
+        </button>
+      )}
+
+      <div className="border-t border-gray-100 pt-4 space-y-3">
+        <p className="text-sm font-medium text-gray-700">権限</p>
+        <div className="flex gap-2">
+          {ROLE_OPTIONS.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => handleSetRole(value)}
+              disabled={isViewer || rolePending || staff.role === value}
+              className={`flex-1 py-2 text-xs rounded-xl border transition-colors ${
+                staff.role === value
+                  ? 'bg-orange-500 text-white border-orange-500 font-medium'
+                  : 'border-gray-200 text-gray-600 hover:bg-orange-50'
+              } disabled:opacity-60 disabled:cursor-not-allowed`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {roleError && <p className="text-xs text-red-600">{roleError}</p>}
+      </div>
+
+      {!isViewer && (
+        <div className="border-t border-gray-100 pt-4">
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deletePending}
+            className="w-full border border-red-300 text-red-600 rounded-xl py-3 text-sm font-medium hover:bg-red-50 active:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          >
+            {deletePending ? '削除中...' : 'このスタッフを削除する'}
+          </button>
+        </div>
+      )}
+
+      {modal && <Modal config={modal} onClose={() => setModal(null)} />}
+    </form>
   )
 }
 
