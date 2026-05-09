@@ -15,7 +15,7 @@ export default async function StaffDetailPage({
   const [{ data: { user } }, { auth_uid }, { data: dbAdmins }] = await Promise.all([
     supabase.auth.getUser(),
     params,
-    adminClient.from('admins').select('auth_uid, role'),
+    adminClient.from('admins').select('auth_uid, name, furigana, role'),
   ])
   if (!user) redirect('/login')
 
@@ -37,18 +37,59 @@ export default async function StaffDetailPage({
 
   if (!staff || !staff.name) notFound()
 
+  const staffList = (dbAdmins ?? [])
+    .filter(a => !envAdminUids.includes(a.auth_uid) && a.name)
+    .sort((a, b) => {
+      if (a.role !== b.role) return a.role === 'admin' ? -1 : 1
+      return (a.furigana ?? '').localeCompare(b.furigana ?? '', 'ja')
+    })
+  const currentIndex = staffList.findIndex(a => a.auth_uid === auth_uid)
+  const prevStaff = currentIndex > 0 ? staffList[currentIndex - 1] : null
+  const nextStaff = currentIndex < staffList.length - 1 ? staffList[currentIndex + 1] : null
+
   return (
     <div className="min-h-screen bg-gray-50 animate-page-in">
       <div className="max-w-lg mx-auto">
         <div className="p-4 space-y-4">
           <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-4 z-10 flex items-center gap-3 shadow-sm rounded-xl">
-            <Link href="/admin" scroll={false} className="flex items-center gap-1 text-gray-400 hover:text-gray-700 transition-colors">
+            <Link href="/admin" scroll={false} className="flex items-center gap-1 text-gray-400 hover:text-gray-700 active:opacity-50 transition-all shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                 <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
               </svg>
               <span className="text-sm font-medium">一覧</span>
             </Link>
-            <h1 className="text-base font-bold text-gray-900">{staff.name}</h1>
+            <h1 className="text-base font-bold text-gray-900 flex-1 truncate">{staff.name}</h1>
+            <div className="flex items-center gap-1 shrink-0">
+              {prevStaff ? (
+                <Link
+                  href={`/admin/staff/${prevStaff.auth_uid}`}
+                  title={prevStaff.name ?? ''}
+                  className="flex items-center gap-1 text-gray-500 hover:text-gray-800 active:opacity-50 transition-all px-1.5 py-1 rounded-lg hover:bg-black/5 active:bg-black/10"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                    <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-xs max-w-[4rem] truncate">{prevStaff.name}</span>
+                </Link>
+              ) : (
+                <span className="px-1.5 py-1 w-8" />
+              )}
+              <span className="text-gray-300">|</span>
+              {nextStaff ? (
+                <Link
+                  href={`/admin/staff/${nextStaff.auth_uid}`}
+                  title={nextStaff.name ?? ''}
+                  className="flex items-center gap-1 text-gray-500 hover:text-gray-800 active:opacity-50 transition-all px-1.5 py-1 rounded-lg hover:bg-black/5 active:bg-black/10"
+                >
+                  <span className="text-xs max-w-[4rem] truncate">{nextStaff.name}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                    <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+                  </svg>
+                </Link>
+              ) : (
+                <span className="px-1.5 py-1 w-8" />
+              )}
+            </div>
           </header>
 
           <div className="bg-white rounded-xl shadow-sm p-5">
