@@ -85,8 +85,8 @@ export default async function AdminPage() {
   const maleDorm = allStudents.filter(s => s.dormitory === '男子寮')
   const femaleDorm = allStudents.filter(s => s.dormitory === '女子寮')
   const sortedDormEntries = [
-    { name: '男子寮', students: maleDorm },
     { name: '女子寮', students: femaleDorm },
+    { name: '男子寮', students: maleDorm },
   ]
 
   return (
