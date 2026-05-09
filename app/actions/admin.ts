@@ -254,7 +254,7 @@ export async function removeAdmin(authUid: string): Promise<AdminActionState> {
   await admin.from('admins').delete().eq('auth_uid', authUid)
   await admin.auth.admin.deleteUser(authUid)
   revalidatePath('/admin')
-  return null
+  redirect('/admin')
 }
 
 export async function updateAdminRole(
