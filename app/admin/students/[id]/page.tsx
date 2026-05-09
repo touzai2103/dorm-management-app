@@ -49,7 +49,7 @@ export default async function StudentDetailPage({
   const [{ data: student }, { data: declarations }] = await Promise.all([
     adminClient
       .from('students')
-      .select('id, name, furigana, phone, dormitory, enrollment_year, birth_date, room_number')
+      .select('id, name, furigana, phone, dormitory, enrollment_year, club, room_number')
       .eq('id', id)
       .single(),
     adminClient

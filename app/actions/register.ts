@@ -11,7 +11,7 @@ export type RegisterState = {
     phone?: string
     dormitory?: string
     enrollment_year?: string
-    birth_date?: string
+    club?: string
   }
 } | null
 
@@ -25,7 +25,7 @@ export async function registerStudent(
   const phone = rawPhone.replace(/[-\s]/g, '')
   const dormitory = (formData.get('dormitory') as string)?.trim()
   const enrollmentYearStr = (formData.get('enrollment_year') as string)?.trim()
-  const birthDate = (formData.get('birth_date') as string)?.trim()
+  const club = (formData.get('club') as string)?.trim()
 
   const errors: NonNullable<RegisterState>['errors'] = {}
   const currentYear = new Date().getFullYear()
@@ -66,14 +66,10 @@ export async function registerStudent(
     errors.enrollment_year = '正しい入学年度を選択してください'
   }
 
-  // 生年月日
-  if (!birthDate) {
-    errors.birth_date = '生年月日を入力してください'
-  } else {
-    const birth = new Date(birthDate)
-    if (isNaN(birth.getTime())) {
-      errors.birth_date = '正しい日付を入力してください'
-    }
+  // 部活
+  const VALID_CLUBS = ['無所属', '野球部', '男子バレー部', '女子バレー部', '男子バスケ部', '女子バスケ部', '弓道部', '剣道部']
+  if (!club || !VALID_CLUBS.includes(club)) {
+    errors.club = '部活を選択してください'
   }
 
   if (Object.keys(errors).length > 0) return { errors }
@@ -94,7 +90,7 @@ export async function registerStudent(
       phone,
       dormitory,
       enrollment_year: enrollmentYear,
-      birth_date: birthDate,
+      club,
     })
     .select()
     .single()

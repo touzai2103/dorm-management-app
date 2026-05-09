@@ -2,7 +2,8 @@
 
 import { useActionState } from 'react'
 import { registerStudent, type RegisterState } from '@/app/actions/register'
-import DateWheelPicker from '@/app/components/DateWheelPicker'
+
+const CLUB_OPTIONS = ['無所属', '野球部', '男子バレー部', '女子バレー部', '男子バスケ部', '女子バスケ部', '弓道部', '剣道部']
 
 const currentYear = new Date().getFullYear()
 const enrollmentYears = Array.from({ length: 6 }, (_, i) => currentYear - 4 + i).reverse()
@@ -141,13 +142,28 @@ export default function RegisterForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          生年月日<span className="text-red-500 ml-0.5">*</span>
+        <label htmlFor="club" className="block text-sm font-medium text-gray-700 mb-1">
+          部活<span className="text-red-500 ml-0.5">*</span>
         </label>
-        <DateWheelPicker
-          name="birth_date"
-          error={state?.errors?.birth_date}
-        />
+        <select
+          id="club"
+          name="club"
+          required
+          defaultValue=""
+          className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors ${
+            state?.errors?.club
+              ? 'border-red-400 focus:ring-red-400'
+              : 'border-gray-300 focus:ring-blue-500'
+          }`}
+        >
+          <option value="" disabled>選択してください</option>
+          {CLUB_OPTIONS.map(c => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        {state?.errors?.club && (
+          <p className="mt-1 text-xs text-red-600">{state.errors.club}</p>
+        )}
       </div>
 
       <button

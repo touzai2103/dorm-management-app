@@ -3,7 +3,8 @@
 import { useState, useEffect, useActionState, useTransition, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateStudent, deleteStudent, type UpdateStudentState } from '@/app/actions/admin'
-import DateWheelPicker from '@/app/components/DateWheelPicker'
+
+const CLUB_OPTIONS = ['無所属', '野球部', '男子バレー部', '女子バレー部', '男子バスケ部', '女子バスケ部', '弓道部', '剣道部']
 
 type ModalConfig = {
   title: string
@@ -55,7 +56,7 @@ type Student = {
   phone: string
   dormitory: string
   enrollment_year: number
-  birth_date: string
+  club: string
   room_number: string | null
 }
 
@@ -241,20 +242,32 @@ function StudentEditFormInner({
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              生年月日<span className="text-red-500 ml-0.5">*</span>
+            <label htmlFor="club" className="block text-sm font-medium text-gray-700 mb-1">
+              部活<span className="text-red-500 ml-0.5">*</span>
             </label>
-            <DateWheelPicker
-              name="birth_date"
-              defaultValue={student.birth_date}
-              error={state?.errors?.birth_date}
-            />
+            <select
+              id="club"
+              name="club"
+              required
+              defaultValue={student.club}
+              className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
+                state?.errors?.club
+                  ? 'border-red-400 focus:ring-red-400'
+                  : 'border-gray-300 focus:ring-blue-500'
+              }`}
+            >
+              {CLUB_OPTIONS.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            {state?.errors?.club && (
+              <p className="mt-1 text-xs text-red-600">{state.errors.club}</p>
+            )}
           </div>
           <Field
             label="部屋番号"
             name="room_number"
             defaultValue={student.room_number ?? ''}
-            placeholder="101"
             required={false}
             error={state?.errors?.room_number}
           />
@@ -302,7 +315,7 @@ export default function StudentEditForm(props: {
     props.student.phone,
     props.student.dormitory,
     props.student.enrollment_year,
-    props.student.birth_date,
+    props.student.club,
     props.student.room_number,
   ].join('|')
 
