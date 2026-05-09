@@ -163,11 +163,6 @@ function StudentEditFormInner({
 
   return (
     <>
-      {state?.success && (
-        <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-700 mb-4">
-          更新しました
-        </div>
-      )}
       <form ref={formRef} action={action} className="space-y-4">
         <input type="hidden" name="student_id" value={student.id} />
 
@@ -285,10 +280,14 @@ function StudentEditFormInner({
         {!isViewer && (
           <button
             type="submit"
-            disabled={pending}
-            className="w-full bg-blue-600 text-white rounded-xl py-3 text-sm font-medium hover:bg-blue-700 active:bg-blue-800 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            disabled={pending || !!state?.success}
+            className={`w-full rounded-xl py-3 text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
+              state?.success
+                ? 'bg-green-600 text-white'
+                : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
+            }`}
           >
-            {pending ? '更新中...' : '更新する'}
+            {pending ? '更新中...' : state?.success ? '✓ 更新しました' : '更新する'}
           </button>
         )}
 
