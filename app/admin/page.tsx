@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import AdminMgmt from './components/AdminMgmt'
+import StudentRows from './components/StudentRows'
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土']
 
@@ -76,6 +76,10 @@ export default async function AdminPage() {
   const declMap = new Map(
     declarations?.map(d => [`${d.student_id}:${d.date}`, d]) ?? []
   )
+  const declRecord: Record<string, { breakfast: boolean; dinner: boolean }> = {}
+  declarations?.forEach(d => {
+    declRecord[`${d.student_id}:${d.date}`] = { breakfast: d.breakfast ?? false, dinner: d.dinner ?? false }
+  })
 
   const dormGroups: Record<string, NonNullable<typeof students>> = {}
   students?.forEach(s => {
@@ -84,7 +88,7 @@ export default async function AdminPage() {
   })
 
   return (
-    <div className="min-h-screen bg-[#a9b4ba]">
+    <div className="min-h-screen bg-[#a9b4ba] animate-page-in">
       <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-0 z-20 flex items-center">
         <div className="flex items-center gap-2">
           <h1 className="text-base font-bold text-gray-900">スタッフ用画面</h1>
@@ -197,33 +201,11 @@ export default async function AdminPage() {
                       )
                     })}
                   </tr>
-                  {dStudents.map((s, idx) => (
-                    <tr key={s.id} className={`group transition-colors ${idx % 2 === 0 ? 'bg-white hover:bg-blue-50/40' : 'bg-gray-50/50 hover:bg-blue-50/40'}`}>
-                      <td className={`sticky left-0 z-10 border-r border-gray-100 px-3 py-2 font-medium text-gray-800 whitespace-nowrap transition-colors ${
-                        idx % 2 === 0 ? 'bg-white group-hover:bg-blue-50/40' : 'bg-gray-50 group-hover:bg-blue-50/40'
-                      }`}>
-                        <Link href={`/admin/students/${s.id}`} className="relative after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-0 after:bg-blue-500 after:transition-all after:duration-200 hover:text-blue-600 hover:after:w-full">
-                          {s.name}
-                        </Link>
-                      </td>
-                      {dates.map(date => {
-                        const decl = declMap.get(`${s.id}:${date}`)
-                        return (
-                          <td key={date} className="border-r border-gray-100 p-0 text-center">
-                            <div className="flex justify-center items-center w-full py-2 text-base">
-                              <span className={`flex-1 text-center ${decl?.breakfast ? 'text-red-500' : 'text-gray-300'}`}>
-                                {decl?.breakfast ? '●' : '✕'}
-                              </span>
-                              <span className="text-gray-300">|</span>
-                              <span className={`flex-1 text-center ${decl?.dinner ? 'text-red-500' : 'text-gray-300'}`}>
-                                {decl?.dinner ? '●' : '✕'}
-                              </span>
-                            </div>
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  ))}
+                  <StudentRows
+                    students={dStudents}
+                    declMap={declRecord}
+                    dates={dates}
+                  />
                 </tbody>
               </table>
             </div>

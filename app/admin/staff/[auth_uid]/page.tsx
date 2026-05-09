@@ -38,7 +38,7 @@ export default async function StaffDetailPage({
   if (!staff || !staff.name) notFound()
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 animate-page-in">
       <div className="max-w-lg mx-auto">
         <div className="p-4 space-y-4">
           <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-4 z-10 flex items-center gap-3 shadow-sm rounded-xl">

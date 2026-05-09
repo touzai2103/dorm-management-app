@@ -79,11 +79,11 @@ export default async function StudentDetailPage({
   const nextStudent = currentIndex < studentList.length - 1 ? studentList[currentIndex + 1] : null
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 animate-page-in">
       <div className="max-w-lg mx-auto">
         <div className="p-4 space-y-4">
           <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-4 z-10 flex items-center gap-3 shadow-sm rounded-xl">
-            <Link href="/admin" className="flex items-center gap-1 text-gray-400 hover:text-gray-700 transition-colors shrink-0">
+            <Link href="/admin" className="flex items-center gap-1 text-gray-400 hover:text-gray-700 active:opacity-50 transition-all shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                 <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
               </svg>
@@ -95,7 +95,7 @@ export default async function StudentDetailPage({
                 <Link
                   href={`/admin/students/${prevStudent.id}`}
                   title={prevStudent.name}
-                  className="flex items-center gap-1 text-gray-500 hover:text-gray-800 transition-colors px-1.5 py-1 rounded-lg hover:bg-black/5"
+                  className="flex items-center gap-1 text-gray-500 hover:text-gray-800 active:opacity-50 transition-all px-1.5 py-1 rounded-lg hover:bg-black/5 active:bg-black/10"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                     <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
@@ -110,7 +110,7 @@ export default async function StudentDetailPage({
                 <Link
                   href={`/admin/students/${nextStudent.id}`}
                   title={nextStudent.name}
-                  className="flex items-center gap-1 text-gray-500 hover:text-gray-800 transition-colors px-1.5 py-1 rounded-lg hover:bg-black/5"
+                  className="flex items-center gap-1 text-gray-500 hover:text-gray-800 active:opacity-50 transition-all px-1.5 py-1 rounded-lg hover:bg-black/5 active:bg-black/10"
                 >
                   <span className="text-xs max-w-[4rem] truncate">{nextStudent.name}</span>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">

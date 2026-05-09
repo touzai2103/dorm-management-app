@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ER図 - 寮管理アプリ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f0f4f8; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
+
+  h1 {
+    text-align: center;
+    padding: 24px 0 8px;
+    font-size: 20px;
+    color: #1e293b;
+    letter-spacing: 0.05em;
+  }
+  p.subtitle {
+    text-align: center;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 16px;
+  }
+
+  #canvas-wrap {
+    position: relative;
+    width: 1100px;
+    margin: 0 auto 40px;
+  }
+
+  svg#lines {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .table-box {
+    position: absolute;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+    overflow: hidden;
+    min-width: 220px;
+  }
+
+  .table-header {
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .table-header .schema-label {
+    font-size: 10px;
+    font-weight: 400;
+    opacity: 0.8;
+  }
+
+  .col-row {
+    display: flex;
+    align-items: center;
+    padding: 5px 14px;
+    font-size: 12px;
+    border-top: 1px solid #f1f5f9;
+    gap: 6px;
+  }
+  .col-row:hover { background: #f8fafc; }
+
+  .badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    width: 28px;
+    text-align: center;
+  }
+  .badge-pk { background: #fef3c7; color: #92400e; }
+  .badge-fk { background: #dbeafe; color: #1e40af; }
+  .badge-blank { width: 28px; }
+
+  .col-name {
+    flex: 1;
+    color: #1e293b;
+    font-weight: 500;
+  }
+  .col-type {
+    color: #94a3b8;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .col-null {
+    font-size: 10px;
+    color: #cbd5e1;
+    flex-shrink: 0;
+  }
+
+  /* color themes per table */
+  .hdr-auth     { background: linear-gradient(135deg,#6366f1,#4f46e5); }
+  .hdr-students { background: linear-gradient(135deg,#0ea5e9,#0284c7); }
+  .hdr-links    { background: linear-gradient(135deg,#10b981,#059669); }
+  .hdr-admins   { background: linear-gradient(135deg,#f59e0b,#d97706); }
+  .hdr-meals    { background: linear-gradient(135deg,#ef4444,#dc2626); }
+
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 32px;
+    font-size: 12px;
+    color: #475569;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-badge { font-size: 9px; font-weight: 700; padding: 2px 5px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<h1>DB ER図 — 寮管理アプリ</h1>
+<p class="subtitle">テーブル・カラム・リレーション一覧</p>
+
+<div class="legend">
+  <div class="legend-item">
+    <span class="legend-badge badge-pk">PK</span> 主キー
+  </div>
+  <div class="legend-item">
+    <span class="legend-badge badge-fk">FK</span> 外部キー
+  </div>
+  <div class="legend-item">
+    <svg width="32" height="14" style="overflow:visible"><line x1="0" y1="7" x2="32" y2="7" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/></svg>
+    任意（nullable）
+  </div>
+</div>
+
+<div id="canvas-wrap" style="height:680px">
+  <svg id="lines"></svg>
+
+  <!-- auth.users -->
+  <div class="table-box" id="tbl-auth" style="left:30px;top:220px">
+    <div class="table-header hdr-auth">
+      <span>auth.users</span>
+      <span class="schema-label">Supabase 組み込み</span>
+    </div>
+    <div class="col-row"><span class="badge badge-pk">PK</span><span class="col-name">id</span><span class="col-type">uuid</span></div>
+    <div class="col-row"><span class="badge-blank"></span><span class="col-name">email</span><span class="col-type">text</span></div>
+    <div class="col-row"><span class="badge-blank"></span><span class="col-name">user_metadata</span><span class="col-type">jsonb</span></div>
+  </div>
+
+  <!-- students -->
+  <div class="table-box" id="tbl-students" style="left:440px;top:30px">
+    <div class="table-header hdr-students">students</div>
+    <div class="col-row"><span class="badge badge-pk">PK</span><span class="col-name">id</span><span class="col-type">uuid</span></div>
+    <div class="col-row"><span class="badge-blank"></span><span class="col-name">name</span><span class="col-type">text</span></div>
+    <div class="col-row"><span class="badge-blank"></span><span class="col-name">furigana</span><span class="col-type">text</span></div>
+    <div class="col-row"><span class="badge-blank"></span><span class="col-name">phone</span><span class="col-type">text</span></div>
+    <div class="col-row"><span class="badge-blank"></span><span class="col-name">dormitory</span><span class="col-type">text</span></div>
+    <div class="col-row"><span class="badge-blank"></span><span class="col-name">enrollment_year</span><span class="col-type">int</span></div>
+    <div class="col-row"><span class="badge-blank"></span><span class="col-name">birth_date</span><span class="col-type">date</span></div>
+    <div class="col-row"><span class="badge-blank"></span><span class="col-name">room_number</span><span class="col-type">text</span><span class="col-null">nullable</span></div>
+  </div>
+
+  <!-- student_auth_links -->
+  <div class="table-box" id="tbl-links" style="left:440px;top:370px">
+    <div class="table-header hdr-links">student_auth_links</div>
+    <div class="col-row"><span class="badge badge-fk">FK</span><span class="col-name">student_id</span><span class="col-type">uuid</span></div>
+    <div class="col-row"><span class="badge badge-fk">FK</span><span class="col-name">auth_uid</span><span class="col-type">uuid</span></div>
+    <div class="col-row"><span class="badge-blank"></span><span class="col-name">provider</span><span class="col-type">text</span></div>
+  </div>
+
+  <!-- admins -->
+  <div class="table-box" id="tbl-admins" style="left:30px;top:490px">
+    <div class="table-header hdr-admins">admins</div>
+    <div class="col-row"><span class="badge badge-fk">FK</span><span class="col-name">auth_uid</span><span class="col-type">uuid</span></div>
+    <div class="col-row"><span class="badge-blank"></span><span class="col-name">role</span><span class="col-type">text</span></div>
+  </div>
+
+  <!-- meal_declarations -->
+  <div class="table-box" id="tbl-meals" style="left:820px;top:220px">
+    <div class="table-header hdr-meals">meal_declarations</div>
+    <div class="col-row"><span class="badge badge-fk">FK</span><span class="col-name">student_id</span><span class="col-type">uuid</span></div>
+    <div class="col-row"><span class="badge-blank"></span><span class="col-name">date</span><span class="col-type">date</span></div>
+    <div class="col-row"><span class="badge-blank"></span><span class="col-name">breakfast</span><span class="col-type">boolean</span></div>
+    <div class="col-row"><span class="badge-blank"></span><span class="col-name">dinner</span><span class="col-type">boolean</span></div>
+    <div class="col-row"><span class="badge-blank"></span><span class="col-name">updated_at</span><span class="col-type">timestamptz</span></div>
+  </div>
+</div>
+
+<script>
+// 接続先ノードのアンカー情報 {el, side:'left'|'right'|'top'|'bottom', rowIndex}
+// rowIndex: -1 = ヘッダ中央, 0,1,2... = 各行の中央
+
+function getAnchor(elId, side, rowIndex = -1) {
+  const el = document.getElementById(elId);
+  const wrap = document.getElementById('canvas-wrap');
+  const wRect = wrap.getBoundingClientRect();
+  const eRect = el.getBoundingClientRect();
+
+  const rows = el.querySelectorAll('.col-row');
+  let y;
+  if (rowIndex < 0) {
+    const hdr = el.querySelector('.table-header');
+    const hRect = hdr.getBoundingClientRect();
+    y = hRect.top + hRect.height / 2 - wRect.top;
+  } else {
+    const row = rows[rowIndex];
+    const rRect = row.getBoundingClientRect();
+    y = rRect.top + rRect.height / 2 - wRect.top;
+  }
+
+  let x;
+  if (side === 'left')  x = eRect.left - wRect.left;
+  if (side === 'right') x = eRect.right - wRect.left;
+  if (side === 'top')   { x = eRect.left + eRect.width / 2 - wRect.left; y = eRect.top - wRect.top; }
+  if (side === 'bottom'){ x = eRect.left + eRect.width / 2 - wRect.left; y = eRect.bottom - wRect.top; }
+
+  return { x, y };
+}
+
+function drawLine(svg, x1, y1, x2, y2, opts = {}) {
+  const { color = '#94a3b8', dashed = false, label = '', oneMany = false, manyOne = false } = opts;
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  const mx = (x1 + x2) / 2;
+  const d = `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
+  path.setAttribute('d', d);
+  path.setAttribute('stroke', color);
+  path.setAttribute('stroke-width', '1.8');
+  path.setAttribute('fill', 'none');
+  if (dashed) path.setAttribute('stroke-dasharray', '5,4');
+  g.appendChild(path);
+
+  // crow-foot many (三叉) at endpoint
+  function crowFoot(px, py, dx) {
+    const s = dx > 0 ? 1 : -1;
+    const lines = [
+      [px, py, px + s*12, py],
+      [px + s*8, py - 6, px + s*14, py],
+      [px + s*8, py + 6, px + s*14, py],
+    ];
+    lines.forEach(([ax,ay,bx,by]) => {
+      const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      l.setAttribute('x1', ax); l.setAttribute('y1', ay);
+      l.setAttribute('x2', bx); l.setAttribute('y2', by);
+      l.setAttribute('stroke', color); l.setAttribute('stroke-width', '1.8');
+      g.appendChild(l);
+    });
+  }
+
+  // single bar at endpoint
+  function singleBar(px, py, dx) {
+    const s = dx > 0 ? 1 : -1;
+    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    l.setAttribute('x1', px + s*8); l.setAttribute('y1', py - 6);
+    l.setAttribute('x2', px + s*8); l.setAttribute('y2', py + 6);
+    l.setAttribute('stroke', color); l.setAttribute('stroke-width', '1.8');
+    g.appendChild(l);
+  }
+
+  if (oneMany) {
+    singleBar(x1, y1, x2 - x1);
+    crowFoot(x2, y2, x1 - x2);
+  }
+  if (manyOne) {
+    crowFoot(x1, y1, x2 - x1);
+    singleBar(x2, y2, x1 - x2);
+  }
+
+  if (label) {
+    const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    txt.setAttribute('x', (x1 + x2) / 2);
+    txt.setAttribute('y', (y1 + y2) / 2 - 6);
+    txt.setAttribute('text-anchor', 'middle');
+    txt.setAttribute('font-size', '10');
+    txt.setAttribute('fill', '#64748b');
+    txt.textContent = label;
+    g.appendChild(txt);
+  }
+
+  svg.appendChild(g);
+}
+
+window.addEventListener('load', () => {
+  const svg = document.getElementById('lines');
+
+  // students(right row0) → meal_declarations(left row0)  1:N
+  const sR = getAnchor('tbl-students', 'right', 0);
+  const mL = getAnchor('tbl-meals', 'left', 0);
+  drawLine(svg, sR.x, sR.y, mL.x, mL.y, { color:'#ef4444', oneMany: true, label:'1 : N' });
+
+  // students(bottom) → student_auth_links(top row0)  1:N
+  const sBt = getAnchor('tbl-students', 'bottom', -1);
+  const lT  = getAnchor('tbl-links', 'top', -1);
+  drawLine(svg, sBt.x, sBt.y, lT.x, lT.y, { color:'#10b981', oneMany: true, label:'1 : N' });
+
+  // auth.users(right row0) → student_auth_links(left row1)  1:N
+  const aR = getAnchor('tbl-auth', 'right', 0);
+  const lL = getAnchor('tbl-links', 'left', 1);
+  drawLine(svg, aR.x, aR.y, lL.x, lL.y, { color:'#6366f1', oneMany: true, label:'1 : N' });
+
+  // auth.users(bottom row0) → admins(top row0)  1:0..1
+  const aB  = getAnchor('tbl-auth', 'bottom', -1);
+  const adT = getAnchor('tbl-admins', 'top', -1);
+  drawLine(svg, aB.x, aB.y, adT.x, adT.y, { color:'#f59e0b', oneMany: false, manyOne: false, dashed: true, label:'0..1' });
+});
+</script>
+
+</body>
+</html>
