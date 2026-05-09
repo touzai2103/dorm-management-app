@@ -28,6 +28,7 @@ export default function StudentRows({
           <tr
             key={s.id}
             onClick={() => {
+              sessionStorage.setItem(`scroll:${window.location.pathname}`, String(window.scrollY))
               setNavigatingId(s.id)
               router.push(`/admin/students/${s.id}`)
             }}
