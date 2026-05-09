@@ -78,6 +78,7 @@ function StaffEditFormInner({
   const [deletePending, startDelete] = useTransition()
   const [roleError, setRoleError] = useState<string | null>(null)
   const [modal, setModal] = useState<ModalConfig | null>(null)
+  const [saved, setSaved] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
@@ -90,7 +91,11 @@ function StaffEditFormInner({
 
   useEffect(() => {
     if (!state?.success) return
-    const timer = setTimeout(() => router.refresh(), 2500)
+    setSaved(true)
+    const timer = setTimeout(() => {
+      setSaved(false)
+      router.refresh()
+    }, 2500)
     return () => clearTimeout(timer)
   }, [state?.success])
 
@@ -202,14 +207,14 @@ function StaffEditFormInner({
         {!isViewer && (
           <button
             type="submit"
-            disabled={pending || !!state?.success}
+            disabled={pending || saved}
             className={`w-full rounded-xl py-3 text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
-              state?.success
+              saved
                 ? 'bg-green-600 text-white'
                 : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
             }`}
           >
-            {pending ? '更新中...' : state?.success ? '✓ 更新しました' : '更新する'}
+            {pending ? '更新中...' : saved ? '✓ 更新しました' : '更新する'}
           </button>
         )}
 
