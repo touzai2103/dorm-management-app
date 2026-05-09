@@ -81,14 +81,11 @@ export default async function AdminPage() {
     declRecord[`${d.student_id}:${d.date}`] = { breakfast: d.breakfast ?? false, dinner: d.dinner ?? false }
   })
 
-  const DORM_ORDER = ['男子寮', '女子寮']
-  const dormGroups: Record<string, NonNullable<typeof students>> = {}
-  students?.forEach(s => {
-    if (!dormGroups[s.dormitory]) dormGroups[s.dormitory] = []
-    dormGroups[s.dormitory].push(s)
-  })
-  const sortedDormEntries = Object.entries(dormGroups)
-    .sort(([a], [b]) => DORM_ORDER.indexOf(a) - DORM_ORDER.indexOf(b))
+  const allStudents = students ?? []
+  const sortedDormEntries: [string, typeof allStudents][] = [
+    ['男子寮', allStudents.filter(s => s.dormitory === '男子寮')],
+    ['女子寮', allStudents.filter(s => s.dormitory === '女子寮')],
+  ]
 
   return (
     <div className="min-h-screen bg-[#a9b4ba] animate-page-in">
