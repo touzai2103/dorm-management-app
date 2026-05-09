@@ -81,11 +81,14 @@ export default async function AdminPage() {
     declRecord[`${d.student_id}:${d.date}`] = { breakfast: d.breakfast ?? false, dinner: d.dinner ?? false }
   })
 
+  const DORM_ORDER = ['男子寮', '女子寮']
   const dormGroups: Record<string, NonNullable<typeof students>> = {}
   students?.forEach(s => {
     if (!dormGroups[s.dormitory]) dormGroups[s.dormitory] = []
     dormGroups[s.dormitory].push(s)
   })
+  const sortedDormEntries = Object.entries(dormGroups)
+    .sort(([a], [b]) => DORM_ORDER.indexOf(a) - DORM_ORDER.indexOf(b))
 
   return (
     <div className="min-h-screen bg-[#a9b4ba] animate-page-in">
@@ -124,7 +127,7 @@ export default async function AdminPage() {
                     <div className="text-sm text-gray-500 mt-1">({dow})</div>
                   </div>
                 </div>
-                {Object.entries(dormGroups).map(([dorm, dStudents]) => {
+                {sortedDormEntries.map(([dorm, dStudents]) => {
                   const bf = dStudents.filter(s => declMap.get(`${s.id}:${date}`)?.breakfast).length
                   const dn = dStudents.filter(s => declMap.get(`${s.id}:${date}`)?.dinner).length
                   return (
@@ -148,7 +151,7 @@ export default async function AdminPage() {
           })}
         </div>
 
-        {Object.entries(dormGroups).map(([dormitory, dStudents]) => (
+        {sortedDormEntries.map(([dormitory, dStudents]) => (
           <div key={dormitory} className="bg-[#ebe7df] rounded-xl shadow-sm overflow-hidden">
             <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
               <span className="text-sm font-bold text-gray-700">{dormitory}</span>

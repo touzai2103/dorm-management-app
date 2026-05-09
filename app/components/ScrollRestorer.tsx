@@ -15,12 +15,11 @@ export default function ScrollRestorer() {
   useEffect(() => {
     const saved = sessionStorage.getItem(`scroll:${pathname}`)
     if (!saved) return
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        window.scrollTo({ top: parseInt(saved), behavior: 'instant' })
-        sessionStorage.removeItem(`scroll:${pathname}`)
-      })
-    })
+    const timer = setTimeout(() => {
+      window.scrollTo({ top: parseInt(saved), behavior: 'instant' })
+      sessionStorage.removeItem(`scroll:${pathname}`)
+    }, 60)
+    return () => clearTimeout(timer)
   }, [pathname])
 
   return null
