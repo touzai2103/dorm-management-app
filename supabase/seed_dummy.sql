@@ -112,8 +112,8 @@ FOR i IN 1..40 LOOP
     VALUES (
       ids[i],
       d,
-      random() > 0.3,
-      random() > 0.2,
+      random() > 0.1,
+      random() > 0.1,
       NOW() - (random() * interval '2 days')
     );
   END LOOP;

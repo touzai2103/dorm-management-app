@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useActionState, useTransition, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+
 import { updateStudent, deleteStudent, type UpdateStudentState } from '@/app/actions/admin'
 
 const CLUB_OPTIONS = ['無所属', '野球部', '男子バレー部', '女子バレー部', '男子バスケ部', '女子バスケ部', '弓道部', '剣道部']
@@ -111,12 +112,11 @@ function Field({
 function StudentEditFormInner({
   student,
   isViewer,
-  onSuccess,
 }: {
   student: Student
   isViewer: boolean
-  onSuccess: () => void
 }) {
+  const router = useRouter()
   const [state, action, pending] = useActionState<UpdateStudentState, FormData>(
     updateStudent,
     null
@@ -134,8 +134,10 @@ function StudentEditFormInner({
   }, [])
 
   useEffect(() => {
-    if (state?.success) onSuccess()
-  }, [state])
+    if (!state?.success) return
+    const timer = setTimeout(() => router.refresh(), 2500)
+    return () => clearTimeout(timer)
+  }, [state?.success])
 
   function handleDelete() {
     setModal({
@@ -160,145 +162,152 @@ function StudentEditFormInner({
   }
 
   return (
-    <form ref={formRef} action={action} className="space-y-4">
-      <input type="hidden" name="student_id" value={student.id} />
-
-      {isViewer && (
-        <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-500">
-          閲覧専用モードです
+    <>
+      {state?.success && (
+        <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-700 mb-4">
+          更新しました
         </div>
       )}
+      <form ref={formRef} action={action} className="space-y-4">
+        <input type="hidden" name="student_id" value={student.id} />
 
-      <fieldset disabled={isViewer} className={isViewer ? 'opacity-70' : ''}>
-        <div className="space-y-4">
-          <Field
-            label="氏名"
-            name="name"
-            defaultValue={student.name}
-            placeholder="山田 太郎"
-            hint="姓と名の間に半角スペースを入力してください"
-            error={state?.errors?.name}
-          />
-          <Field
-            label="ふりがな"
-            name="furigana"
-            defaultValue={student.furigana}
-            placeholder="やまだ たろう"
-            error={state?.errors?.furigana}
-          />
-          <Field
-            label="携帯番号"
-            name="phone"
-            type="tel"
-            inputMode="tel"
-            defaultValue={student.phone}
-            placeholder="09012345678"
-            hint="ハイフン不要"
-            error={state?.errors?.phone}
-          />
-          <div>
-            <label htmlFor="dormitory" className="block text-sm font-medium text-gray-700 mb-1">
-              所属寮<span className="text-red-500 ml-0.5">*</span>
-            </label>
-            <select
-              id="dormitory"
-              name="dormitory"
-              required
-              defaultValue={student.dormitory}
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                state?.errors?.dormitory
-                  ? 'border-red-400 focus:ring-red-400'
-                  : 'border-gray-300 focus:ring-blue-500'
-              }`}
-            >
-              <option value="男子寮">男子寮</option>
-              <option value="女子寮">女子寮</option>
-            </select>
-            {state?.errors?.dormitory && (
-              <p className="mt-1 text-xs text-red-600">{state.errors.dormitory}</p>
-            )}
+        {isViewer && (
+          <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-500">
+            閲覧専用モードです
           </div>
-          <div>
-            <label htmlFor="enrollment_year" className="block text-sm font-medium text-gray-700 mb-1">
-              入学年度<span className="text-red-500 ml-0.5">*</span>
-            </label>
-            <select
-              id="enrollment_year"
-              name="enrollment_year"
-              required
-              defaultValue={student.enrollment_year}
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                state?.errors?.enrollment_year
-                  ? 'border-red-400 focus:ring-red-400'
-                  : 'border-gray-300 focus:ring-blue-500'
-              }`}
-            >
-              {enrollmentYears.map(y => (
-                <option key={y} value={y}>{y}年度</option>
-              ))}
-            </select>
-            {state?.errors?.enrollment_year && (
-              <p className="mt-1 text-xs text-red-600">{state.errors.enrollment_year}</p>
-            )}
-          </div>
-          <div>
-            <label htmlFor="club" className="block text-sm font-medium text-gray-700 mb-1">
-              部活<span className="text-red-500 ml-0.5">*</span>
-            </label>
-            <select
-              id="club"
-              name="club"
-              required
-              defaultValue={student.club}
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                state?.errors?.club
-                  ? 'border-red-400 focus:ring-red-400'
-                  : 'border-gray-300 focus:ring-blue-500'
-              }`}
-            >
-              {CLUB_OPTIONS.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-            {state?.errors?.club && (
-              <p className="mt-1 text-xs text-red-600">{state.errors.club}</p>
-            )}
-          </div>
-          <Field
-            label="部屋番号"
-            name="room_number"
-            defaultValue={student.room_number ?? ''}
-            required={false}
-            error={state?.errors?.room_number}
-          />
-        </div>
-      </fieldset>
+        )}
 
-      {!isViewer && (
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full bg-blue-600 text-white rounded-xl py-3 text-sm font-medium hover:bg-blue-700 active:bg-blue-800 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-        >
-          {pending ? '更新中...' : '更新する'}
-        </button>
-      )}
+        <fieldset disabled={isViewer} className={isViewer ? 'opacity-70' : ''}>
+          <div className="space-y-4">
+            <Field
+              label="氏名"
+              name="name"
+              defaultValue={student.name}
+              placeholder="山田 太郎"
+              hint="姓と名の間に半角スペースを入力してください"
+              error={state?.errors?.name}
+            />
+            <Field
+              label="ふりがな"
+              name="furigana"
+              defaultValue={student.furigana}
+              placeholder="やまだ たろう"
+              error={state?.errors?.furigana}
+            />
+            <Field
+              label="携帯番号"
+              name="phone"
+              type="tel"
+              inputMode="tel"
+              defaultValue={student.phone}
+              placeholder="09012345678"
+              hint="ハイフン不要"
+              error={state?.errors?.phone}
+            />
+            <div>
+              <label htmlFor="dormitory" className="block text-sm font-medium text-gray-700 mb-1">
+                所属寮<span className="text-red-500 ml-0.5">*</span>
+              </label>
+              <select
+                id="dormitory"
+                name="dormitory"
+                required
+                defaultValue={student.dormitory}
+                className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
+                  state?.errors?.dormitory
+                    ? 'border-red-400 focus:ring-red-400'
+                    : 'border-gray-300 focus:ring-blue-500'
+                }`}
+              >
+                <option value="男子寮">男子寮</option>
+                <option value="女子寮">女子寮</option>
+              </select>
+              {state?.errors?.dormitory && (
+                <p className="mt-1 text-xs text-red-600">{state.errors.dormitory}</p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="enrollment_year" className="block text-sm font-medium text-gray-700 mb-1">
+                入学年度<span className="text-red-500 ml-0.5">*</span>
+              </label>
+              <select
+                id="enrollment_year"
+                name="enrollment_year"
+                required
+                defaultValue={student.enrollment_year}
+                className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
+                  state?.errors?.enrollment_year
+                    ? 'border-red-400 focus:ring-red-400'
+                    : 'border-gray-300 focus:ring-blue-500'
+                }`}
+              >
+                {enrollmentYears.map(y => (
+                  <option key={y} value={y}>{y}年度</option>
+                ))}
+              </select>
+              {state?.errors?.enrollment_year && (
+                <p className="mt-1 text-xs text-red-600">{state.errors.enrollment_year}</p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="club" className="block text-sm font-medium text-gray-700 mb-1">
+                部活<span className="text-red-500 ml-0.5">*</span>
+              </label>
+              <select
+                id="club"
+                name="club"
+                required
+                defaultValue={student.club}
+                className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
+                  state?.errors?.club
+                    ? 'border-red-400 focus:ring-red-400'
+                    : 'border-gray-300 focus:ring-blue-500'
+                }`}
+              >
+                {CLUB_OPTIONS.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              {state?.errors?.club && (
+                <p className="mt-1 text-xs text-red-600">{state.errors.club}</p>
+              )}
+            </div>
+            <Field
+              label="部屋番号"
+              name="room_number"
+              defaultValue={student.room_number ?? ''}
+              required={false}
+              error={state?.errors?.room_number}
+            />
+          </div>
+        </fieldset>
 
-      {!isViewer && (
-        <div className="border-t border-gray-100 pt-4">
+        {!isViewer && (
           <button
-            type="button"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="w-full border border-red-300 text-red-600 rounded-xl py-3 text-sm font-medium hover:bg-red-50 active:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            type="submit"
+            disabled={pending}
+            className="w-full bg-blue-600 text-white rounded-xl py-3 text-sm font-medium hover:bg-blue-700 active:bg-blue-800 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           >
-            {deleting ? '削除中...' : 'このユーザーを削除する'}
+            {pending ? '更新中...' : '更新する'}
           </button>
-        </div>
-      )}
+        )}
 
-      {modal && <Modal config={modal} onClose={() => setModal(null)} />}
-    </form>
+        {!isViewer && (
+          <div className="border-t border-gray-100 pt-4">
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="w-full border border-red-300 text-red-600 rounded-xl py-3 text-sm font-medium hover:bg-red-50 active:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            >
+              {deleting ? '削除中...' : 'このユーザーを削除する'}
+            </button>
+          </div>
+        )}
+
+        {modal && <Modal config={modal} onClose={() => setModal(null)} />}
+      </form>
+    </>
   )
 }
 
@@ -306,9 +315,6 @@ export default function StudentEditForm(props: {
   student: Student
   isViewer: boolean
 }) {
-  const [showSuccess, setShowSuccess] = useState(false)
-  const router = useRouter()
-
   const key = [
     props.student.name,
     props.student.furigana,
@@ -320,21 +326,9 @@ export default function StudentEditForm(props: {
   ].join('|')
 
   return (
-    <>
-      {showSuccess && (
-        <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-700 mb-4">
-          更新しました
-        </div>
-      )}
-      <StudentEditFormInner
-        key={key}
-        {...props}
-        onSuccess={() => {
-          setShowSuccess(true)
-          setTimeout(() => setShowSuccess(false), 3000)
-          router.refresh()
-        }}
-      />
-    </>
+    <StudentEditFormInner
+      key={key}
+      {...props}
+    />
   )
 }
