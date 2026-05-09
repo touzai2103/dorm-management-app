@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import {
   approvePendingAdmin,
@@ -124,12 +125,14 @@ export default function AdminMgmt({
   const [modal, setModal] = useState<ModalState | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const router = useRouter()
 
   function run(fn: () => Promise<AdminActionState>) {
     startTransition(async () => {
       setError(null)
       const result = await fn()
       if (result?.error) setError(result.error)
+      else router.refresh()
     })
   }
 
