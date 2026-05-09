@@ -46,7 +46,7 @@ export default async function StudentDetailPage({
   const today = getJSTToday()
   const endDate = addDays(today, 14)
 
-  const [{ data: student }, { data: declarations }] = await Promise.all([
+  const [{ data: student }, { data: declarations }, { data: allStudents }] = await Promise.all([
     adminClient
       .from('students')
       .select('id, name, furigana, phone, dormitory, enrollment_year, club, room_number')
@@ -58,6 +58,12 @@ export default async function StudentDetailPage({
       .eq('student_id', id)
       .gte('date', today)
       .lte('date', endDate),
+    adminClient
+      .from('students')
+      .select('id, name, dormitory')
+      .order('dormitory', { ascending: true })
+      .order('enrollment_year', { ascending: true })
+      .order('furigana', { ascending: true }),
   ])
 
   if (!student) notFound()
@@ -67,18 +73,54 @@ export default async function StudentDetailPage({
     declarationMap[d.date] = { breakfast: d.breakfast ?? false, dinner: d.dinner ?? false }
   })
 
+  const studentList = allStudents ?? []
+  const currentIndex = studentList.findIndex(s => s.id === id)
+  const prevStudent = currentIndex > 0 ? studentList[currentIndex - 1] : null
+  const nextStudent = currentIndex < studentList.length - 1 ? studentList[currentIndex + 1] : null
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-lg mx-auto">
         <div className="p-4 space-y-4">
           <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-4 z-10 flex items-center gap-3 shadow-sm rounded-xl">
-            <Link href="/admin" className="flex items-center gap-1 text-gray-400 hover:text-gray-700 transition-colors">
+            <Link href="/admin" className="flex items-center gap-1 text-gray-400 hover:text-gray-700 transition-colors shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                 <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
               </svg>
               <span className="text-sm font-medium">一覧</span>
             </Link>
-            <h1 className="text-base font-bold text-gray-900">{student.name}</h1>
+            <h1 className="text-base font-bold text-gray-900 flex-1 truncate">{student.name}</h1>
+            <div className="flex items-center gap-1 shrink-0">
+              {prevStudent ? (
+                <Link
+                  href={`/admin/students/${prevStudent.id}`}
+                  title={prevStudent.name}
+                  className="flex items-center gap-1 text-gray-500 hover:text-gray-800 transition-colors px-1.5 py-1 rounded-lg hover:bg-black/5"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                    <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-xs max-w-[4rem] truncate">{prevStudent.name}</span>
+                </Link>
+              ) : (
+                <span className="px-1.5 py-1 w-8" />
+              )}
+              <span className="text-gray-300">|</span>
+              {nextStudent ? (
+                <Link
+                  href={`/admin/students/${nextStudent.id}`}
+                  title={nextStudent.name}
+                  className="flex items-center gap-1 text-gray-500 hover:text-gray-800 transition-colors px-1.5 py-1 rounded-lg hover:bg-black/5"
+                >
+                  <span className="text-xs max-w-[4rem] truncate">{nextStudent.name}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                    <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+                  </svg>
+                </Link>
+              ) : (
+                <span className="px-1.5 py-1 w-8" />
+              )}
+            </div>
           </header>
 
           <div className="bg-white rounded-xl shadow-sm p-5">
