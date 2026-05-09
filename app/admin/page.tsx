@@ -82,9 +82,11 @@ export default async function AdminPage() {
   })
 
   const allStudents = students ?? []
-  const sortedDormEntries: [string, typeof allStudents][] = [
-    ['男子寮', allStudents.filter(s => s.dormitory === '男子寮')],
-    ['女子寮', allStudents.filter(s => s.dormitory === '女子寮')],
+  const maleDorm = allStudents.filter(s => s.dormitory === '男子寮')
+  const femaleDorm = allStudents.filter(s => s.dormitory === '女子寮')
+  const sortedDormEntries = [
+    { name: '男子寮', students: maleDorm },
+    { name: '女子寮', students: femaleDorm },
   ]
 
   return (
@@ -124,7 +126,7 @@ export default async function AdminPage() {
                     <div className="text-sm text-gray-500 mt-1">({dow})</div>
                   </div>
                 </div>
-                {sortedDormEntries.map(([dorm, dStudents]) => {
+                {sortedDormEntries.map(({ name: dorm, students: dStudents }) => {
                   const bf = dStudents.filter(s => declMap.get(`${s.id}:${date}`)?.breakfast).length
                   const dn = dStudents.filter(s => declMap.get(`${s.id}:${date}`)?.dinner).length
                   return (
@@ -148,7 +150,7 @@ export default async function AdminPage() {
           })}
         </div>
 
-        {sortedDormEntries.map(([dormitory, dStudents]) => (
+        {sortedDormEntries.map(({ name: dormitory, students: dStudents }) => (
           <div key={dormitory} className="bg-[#ebe7df] rounded-xl shadow-sm overflow-hidden">
             <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
               <span className="text-sm font-bold text-gray-700">{dormitory}</span>
