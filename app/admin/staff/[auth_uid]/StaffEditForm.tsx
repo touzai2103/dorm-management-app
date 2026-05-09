@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useActionState, useTransition, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   updateStaff,
   updateAdminRole,
@@ -79,6 +80,7 @@ function StaffEditFormInner({
   const [roleError, setRoleError] = useState<string | null>(null)
   const [modal, setModal] = useState<ModalConfig | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
+  const router = useRouter()
 
   useEffect(() => {
     const form = formRef.current
@@ -104,6 +106,7 @@ function StaffEditFormInner({
         startRole(async () => {
           const result = await updateAdminRole(staff.auth_uid, role)
           if (result?.error) setRoleError(result.error)
+          else router.refresh()
         })
       },
     })
@@ -247,6 +250,7 @@ function StaffEditFormInner({
 
 export default function StaffEditForm(props: { staff: Staff; isViewer: boolean }) {
   const [showSuccess, setShowSuccess] = useState(false)
+  const router = useRouter()
 
   const key = [props.staff.name, props.staff.furigana, props.staff.phone, props.staff.role].join('|')
 
@@ -263,6 +267,7 @@ export default function StaffEditForm(props: { staff: Staff; isViewer: boolean }
         onSuccess={() => {
           setShowSuccess(true)
           setTimeout(() => setShowSuccess(false), 3000)
+          router.refresh()
         }}
       />
     </>

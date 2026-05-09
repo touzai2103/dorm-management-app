@@ -118,7 +118,6 @@ export async function updateStudent(
   }
 
   revalidatePath('/admin')
-  revalidatePath(`/admin/students/${studentId}`)
   return { success: true }
 }
 
@@ -191,7 +190,6 @@ export async function updateStaff(
   }
 
   revalidatePath('/admin')
-  revalidatePath(`/admin/staff/${authUid}`)
   return { success: true }
 }
 

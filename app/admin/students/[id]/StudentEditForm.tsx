@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useActionState, useTransition, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { updateStudent, deleteStudent, type UpdateStudentState } from '@/app/actions/admin'
 import DateWheelPicker from '@/app/components/DateWheelPicker'
 
@@ -293,6 +294,7 @@ export default function StudentEditForm(props: {
   isViewer: boolean
 }) {
   const [showSuccess, setShowSuccess] = useState(false)
+  const router = useRouter()
 
   const key = [
     props.student.name,
@@ -317,6 +319,7 @@ export default function StudentEditForm(props: {
         onSuccess={() => {
           setShowSuccess(true)
           setTimeout(() => setShowSuccess(false), 3000)
+          router.refresh()
         }}
       />
     </>
