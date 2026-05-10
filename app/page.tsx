@@ -101,7 +101,7 @@ export default async function Home() {
 
         <div className="px-4 py-3 bg-blue-50 border-b border-blue-100">
           <p className="text-xs text-blue-700">
-            締切は各日の2日前 23:59 です。締切後は変更できません。
+            締切は2日前の0時です。締切後は変更できません。
           </p>
         </div>
 
