@@ -113,8 +113,8 @@ export default async function StudentDetailPage({
                   grade === 2 ? 'bg-green-100 text-green-700' :
                   'bg-red-100 text-red-700'
                 return (
-                  <span className={`text-xs rounded-full px-2 py-0.5 font-medium shrink-0 ${color}`}>
-                    {grade}年生
+                  <span className={`text-xs rounded-full px-1.5 py-px font-medium shrink-0 ${color}`}>
+                    {grade}年
                   </span>
                 )
               })()}
@@ -129,7 +129,7 @@ export default async function StudentDetailPage({
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                     <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
                   </svg>
-                  <span className="text-xs max-w-[4rem] truncate">{prevStudent.name}</span>
+                  <span className="hidden sm:inline text-xs max-w-[4rem] truncate">{prevStudent.name}</span>
                 </Link>
               ) : (
                 <span className="px-1.5 py-1 w-8" />
@@ -141,7 +141,7 @@ export default async function StudentDetailPage({
                   title={nextStudent.name}
                   className="flex items-center gap-1 text-gray-500 hover:text-gray-800 active:opacity-50 transition-all px-1.5 py-1 rounded-lg hover:bg-black/5 active:bg-black/10"
                 >
-                  <span className="text-xs max-w-[4rem] truncate">{nextStudent.name}</span>
+                  <span className="hidden sm:inline text-xs max-w-[4rem] truncate">{nextStudent.name}</span>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                     <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
                   </svg>
