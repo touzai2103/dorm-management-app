@@ -74,11 +74,11 @@ export default async function StudentDetailPage({
       .order('enrollment_year', { ascending: true })
       .order('furigana', { ascending: true }),
     adminClient
-      .from('meal_declarations')
-      .select('date, breakfast, dinner, updated_by_name, updated_at')
+      .from('meal_change_logs')
+      .select('id, date, meal, changed_to, changed_by_name, changed_at')
       .eq('student_id', id)
-      .not('updated_by_name', 'is', null)
-      .order('date', { ascending: false }),
+      .order('date', { ascending: false })
+      .order('changed_at', { ascending: false }),
   ])
 
   if (!student) notFound()

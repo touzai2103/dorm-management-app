@@ -293,18 +293,69 @@ export async function adminUpsertMealDeclaration(
   const admin = createAdminClient()
 
   const envAdminUids = (process.env.ADMIN_AUTH_UIDS ?? '').split(',').map(s => s.trim()).filter(Boolean)
-  let updatedByName: string
+  let adminName: string
   if (envAdminUids.includes(user.id)) {
-    updatedByName = 'スーパー管理者'
+    adminName = 'スーパー管理者'
   } else {
     const { data } = await admin.from('admins').select('name').eq('auth_uid', user.id).maybeSingle()
-    updatedByName = data?.name ?? '管理者'
+    adminName = data?.name ?? '管理者'
   }
 
+  // 変更前の状態を取得
+  const { data: current } = await admin
+    .from('meal_declarations')
+    .select('breakfast, dinner')
+    .eq('student_id', studentId)
+    .eq('date', date)
+    .maybeSingle()
+
+  const currentBreakfast = current?.breakfast ?? false
+  const currentDinner = current?.dinner ?? false
+
   await admin.from('meal_declarations').upsert(
-    { student_id: studentId, date, breakfast, dinner, updated_at: new Date().toISOString(), updated_by_name: updatedByName },
+    { student_id: studentId, date, breakfast, dinner, updated_at: new Date().toISOString() },
     { onConflict: 'student_id,date' }
   )
+
+  // 食事ごとにログを管理
+  const meals = [
+    { meal: 'breakfast', currentValue: currentBreakfast, newValue: breakfast },
+    { meal: 'dinner',    currentValue: currentDinner,    newValue: dinner    },
+  ] as const
+
+  for (const { meal, currentValue, newValue } of meals) {
+    if (newValue === currentValue) continue  // この食事は変更なし
+
+    const { data: existingLog } = await admin
+      .from('meal_change_logs')
+      .select('id, original_value')
+      .eq('student_id', studentId)
+      .eq('date', date)
+      .eq('meal', meal)
+      .maybeSingle()
+
+    if (existingLog) {
+      if (newValue === existingLog.original_value) {
+        // 元の状態に戻した → ログ削除
+        await admin.from('meal_change_logs').delete().eq('id', existingLog.id)
+      } else {
+        // 別の値に変更 → ログ更新
+        await admin.from('meal_change_logs')
+          .update({ changed_to: newValue, changed_by_name: adminName, changed_at: new Date().toISOString() })
+          .eq('id', existingLog.id)
+      }
+    } else {
+      // 初回の管理者変更 → ログ挿入
+      await admin.from('meal_change_logs').insert({
+        student_id: studentId,
+        date,
+        meal,
+        original_value: currentValue,
+        changed_to: newValue,
+        changed_by_name: adminName,
+      })
+    }
+  }
 
   revalidatePath('/')
   revalidatePath('/admin')

@@ -38,7 +38,7 @@ export async function upsertMealDeclaration(
   const { error } = await admin
     .from('meal_declarations')
     .upsert(
-      { student_id: studentId, date, breakfast, dinner, updated_at: new Date().toISOString(), updated_by_name: null },
+      { student_id: studentId, date, breakfast, dinner, updated_at: new Date().toISOString() },
       { onConflict: 'student_id,date' }
     )
 
@@ -46,6 +46,9 @@ export async function upsertMealDeclaration(
     console.error('[meals] upsert error:', JSON.stringify(error))
     return
   }
+
+  // 生徒が自分で変更したので管理者ログをクリア
+  await admin.from('meal_change_logs').delete().eq('student_id', studentId).eq('date', date)
 
   revalidatePath('/')
   revalidatePath('/admin')
