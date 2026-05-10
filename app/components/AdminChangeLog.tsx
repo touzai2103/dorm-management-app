@@ -42,14 +42,14 @@ export default function AdminChangeLog({ logs }: { logs: Log[] }) {
               <span className="text-sm font-medium text-gray-800 shrink-0">
                 {formatDate(log.date)}
               </span>
-              <div className="flex gap-1.5">
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                  log.breakfast ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 line-through'
-                }`}>朝食</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                  log.dinner ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400 line-through'
-                }`}>夕食</span>
-              </div>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                (log.breakfast || log.dinner) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+              }`}>
+                {log.breakfast && log.dinner ? '朝食・夕食'
+                  : log.breakfast ? '朝食のみ'
+                  : log.dinner ? '夕食のみ'
+                  : 'なし'}
+              </span>
             </div>
             <div className="text-right shrink-0">
               <p className="text-xs font-medium text-gray-700">{log.updated_by_name}</p>
