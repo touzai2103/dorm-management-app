@@ -215,7 +215,6 @@ function StaffEditFormInner({
       )}
 
       <div className="border-t border-gray-100 pt-4 space-y-3">
-        <p className="text-sm font-medium text-gray-700">権限</p>
         <div className="flex gap-2">
           {ROLE_OPTIONS.map(({ value, label }) => (
             <button
@@ -223,9 +222,9 @@ function StaffEditFormInner({
               type="button"
               onClick={() => handleSetRole(value)}
               disabled={isViewer || rolePending || staff.role === value}
-              className={`flex-1 py-2 text-xs rounded-xl border transition-colors ${
+              className={`flex-1 py-3 text-sm rounded-xl border transition-colors font-medium ${
                 staff.role === value
-                  ? 'bg-orange-500 text-white border-orange-500 font-medium'
+                  ? 'bg-orange-500 text-white border-orange-500'
                   : 'border-gray-200 text-gray-600 hover:bg-orange-50'
               } disabled:opacity-60 disabled:cursor-not-allowed`}
             >
@@ -242,7 +241,7 @@ function StaffEditFormInner({
             type="button"
             onClick={handleDelete}
             disabled={deletePending}
-            className="w-full border border-red-300 text-red-600 rounded-xl py-3 text-sm font-medium hover:bg-red-50 active:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            className="w-full bg-red-600 text-white rounded-xl py-3 text-sm font-medium hover:bg-red-700 active:bg-red-800 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           >
             {deletePending ? '削除中...' : 'このスタッフを削除する'}
           </button>
