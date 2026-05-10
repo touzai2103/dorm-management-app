@@ -2,25 +2,30 @@
 
 import { useState, useEffect } from 'react'
 
-function getJSTTime() {
+function getJSTParts() {
   const now = new Date(Date.now() + 9 * 60 * 60 * 1000)
-  const h = String(now.getUTCHours()).padStart(2, '0')
-  const m = String(now.getUTCMinutes()).padStart(2, '0')
-  const s = String(now.getUTCSeconds()).padStart(2, '0')
-  return `${h}:${m}:${s}`
+  return {
+    hm: `${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')}`,
+    s: String(now.getUTCSeconds()).padStart(2, '0'),
+  }
 }
 
 export default function JSTClock() {
-  const [time, setTime] = useState(getJSTTime)
+  const [parts, setParts] = useState(getJSTParts)
 
   useEffect(() => {
-    const id = setInterval(() => setTime(getJSTTime()), 1000)
+    const id = setInterval(() => setParts(getJSTParts()), 1000)
     return () => clearInterval(id)
   }, [])
 
   return (
-    <span className="font-mono text-2xl font-bold text-gray-800 tabular-nums tracking-tight">
-      {time}
-    </span>
+    <div className="flex items-center bg-gray-900 rounded-2xl px-3.5 py-1.5 shadow-md">
+      <span className="font-mono text-xl font-bold tabular-nums tracking-tight text-white leading-none">
+        {parts.hm}
+      </span>
+      <span className="font-mono text-sm font-bold tabular-nums text-gray-400 leading-none ml-0.5">
+        :{parts.s}
+      </span>
+    </div>
   )
 }

@@ -83,12 +83,12 @@ export default async function Home() {
                 </p>
               )}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-5">
               <JSTClock />
               <form action={signOut}>
                 <button
                   type="submit"
-                  className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-xs text-gray-600 hover:text-gray-800 border border-gray-400 hover:border-gray-600 rounded-lg px-3 py-1.5 transition-colors"
                 >
                   ログアウト
                 </button>
