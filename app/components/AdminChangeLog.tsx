@@ -37,8 +37,8 @@ export default function AdminChangeLog({ logs }: { logs: Log[] }) {
     <ul className="divide-y divide-gray-100">
       {logs.map(log => {
         const meals = [
-          log.dinner ? '朝食' : null,
-          log.breakfast ? '夕食' : null,
+          log.breakfast ? '朝食' : null,
+          log.dinner ? '夕食' : null,
         ].filter(Boolean)
 
         return (
