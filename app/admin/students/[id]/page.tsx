@@ -99,9 +99,18 @@ export default async function StudentDetailPage({
             </Link>
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <h1 className="text-base font-bold text-gray-900 truncate">{student.name}</h1>
-              <span className="text-xs bg-blue-100 text-blue-700 rounded-full px-2 py-0.5 font-medium shrink-0">
-                {calcGrade(student.enrollment_year)}年生
-              </span>
+              {(() => {
+                const grade = calcGrade(student.enrollment_year)
+                const color =
+                  grade === 1 ? 'bg-blue-100 text-blue-700' :
+                  grade === 2 ? 'bg-green-100 text-green-700' :
+                  'bg-red-100 text-red-700'
+                return (
+                  <span className={`text-xs rounded-full px-2 py-0.5 font-medium shrink-0 ${color}`}>
+                    {grade}年生
+                  </span>
+                )
+              })()}
             </div>
             <div className="flex items-center gap-1 shrink-0">
               {prevStudent ? (
