@@ -68,14 +68,14 @@ export default async function StaffDetailPage({
               <span className="text-sm font-medium">一覧</span>
             </Link>
             <h1 className="text-base font-bold text-gray-900 flex-1 truncate">{staff.name}</h1>
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-5 shrink-0">
               {prevStaff ? (
                 <Link
                   href={`/admin/staff/${prevStaff.auth_uid}`}
                   title={prevStaff.name ?? ''}
                   className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white hover:bg-gray-700 active:bg-gray-600 transition-colors"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                     <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
                   </svg>
                 </Link>
@@ -92,7 +92,7 @@ export default async function StaffDetailPage({
                   title={nextStaff.name ?? ''}
                   className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white hover:bg-gray-700 active:bg-gray-600 transition-colors"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                     <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
                   </svg>
                 </Link>
