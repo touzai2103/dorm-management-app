@@ -35,6 +35,15 @@ export async function upsertMealDeclaration(
 
   // admin クライアントで RLS をバイパスして upsert
   const admin = createAdminClient()
+
+  // 変更前の状態を取得（どの食事が変わったか判定するため）
+  const { data: current } = await admin
+    .from('meal_declarations')
+    .select('breakfast, dinner')
+    .eq('student_id', studentId)
+    .eq('date', date)
+    .maybeSingle()
+
   const { error } = await admin
     .from('meal_declarations')
     .upsert(
@@ -47,8 +56,16 @@ export async function upsertMealDeclaration(
     return
   }
 
-  // 生徒が自分で変更したので管理者ログをクリア
-  await admin.from('meal_change_logs').delete().eq('student_id', studentId).eq('date', date)
+  // 生徒が変更した食事のログだけ削除（触っていない食事の管理者ログは残す）
+  const changedMeals: string[] = []
+  if (breakfast !== (current?.breakfast ?? false)) changedMeals.push('breakfast')
+  if (dinner !== (current?.dinner ?? false)) changedMeals.push('dinner')
+  if (changedMeals.length > 0) {
+    await admin.from('meal_change_logs').delete()
+      .eq('student_id', studentId)
+      .eq('date', date)
+      .in('meal', changedMeals)
+  }
 
   revalidatePath('/')
   revalidatePath('/admin')
