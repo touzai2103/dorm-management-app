@@ -21,7 +21,8 @@ function addDays(dateStr: string, days: number): string {
 
 function isPastDeadline(dateStr: string): boolean {
   const [y, m, d] = dateStr.split('-').map(Number)
-  const deadline = new Date(Date.UTC(y, m - 1, d - 2, 14, 59, 59))
+  // 締切 = 対象日の2日前 0:00 JST = UTC 15:00:00（前日）
+  const deadline = new Date(Date.UTC(y, m - 1, d - 2, 15, 0, 0))
   return new Date() > deadline
 }
 
