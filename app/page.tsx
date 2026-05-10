@@ -3,6 +3,7 @@ import { createAdminClient } from '@/utils/supabase/admin'
 import { redirect } from 'next/navigation'
 import { signOut } from '@/app/actions/auth'
 import MealCalendar from '@/app/components/MealCalendar'
+import JSTClock from '@/app/components/JSTClock'
 
 function getJSTToday(): string {
   const jst = new Date(Date.now() + 9 * 60 * 60 * 1000)
@@ -72,8 +73,8 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-gray-50 animate-page-in">
       <div className="max-w-lg mx-auto">
-        <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-0 z-10 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-0 z-10">
+          <div className="flex items-center justify-between">
             <div>
               <h1 className="text-base font-bold text-gray-900">食事申告</h1>
               {student && (
@@ -82,15 +83,18 @@ export default async function Home() {
                 </p>
               )}
             </div>
+            <div className="flex items-center gap-3">
+              <JSTClock />
+              <form action={signOut}>
+                <button
+                  type="submit"
+                  className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  ログアウト
+                </button>
+              </form>
+            </div>
           </div>
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              ログアウト
-            </button>
-          </form>
         </header>
 
         <div className="px-4 py-3 bg-blue-50 border-b border-blue-100">
