@@ -74,7 +74,7 @@ export default async function Home() {
     <div className="min-h-screen bg-gray-50 animate-page-in">
       <div className="max-w-lg mx-auto">
         <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-0 z-10">
-          <div className="flex items-center justify-between">
+          <div className="grid grid-cols-3 items-center">
             <div>
               <h1 className="text-base font-bold text-gray-900">食事申告</h1>
               {student && (
@@ -83,8 +83,10 @@ export default async function Home() {
                 </p>
               )}
             </div>
-            <div className="flex items-center gap-5">
+            <div className="flex justify-center">
               <JSTClock />
+            </div>
+            <div className="flex justify-end">
               <form action={signOut}>
                 <button
                   type="submit"
