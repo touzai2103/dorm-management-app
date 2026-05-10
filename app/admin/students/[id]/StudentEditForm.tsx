@@ -47,8 +47,9 @@ function Modal({ config, onClose }: { config: ModalConfig; onClose: () => void }
   )
 }
 
-const currentYear = new Date().getFullYear()
-const enrollmentYears = Array.from({ length: 6 }, (_, i) => currentYear - 4 + i).reverse()
+const now = new Date()
+const currentAcademicYear = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1
+const enrollmentYears = Array.from({ length: 4 }, (_, i) => currentAcademicYear - i)
 
 type Student = {
   id: string
