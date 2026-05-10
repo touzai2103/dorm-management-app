@@ -56,6 +56,7 @@ export default async function AdminPage() {
     adminClient
       .from('students')
       .select('id, name, dormitory')
+      .eq('is_enrolled', true)
       .order('enrollment_year', { ascending: true })
       .order('furigana', { ascending: true }),
     adminClient

@@ -128,9 +128,8 @@ export async function deleteStudent(studentId: string): Promise<void> {
     .eq('student_id', studentId)
     .single()
 
-  await admin.from('meal_declarations').delete().eq('student_id', studentId)
   await admin.from('student_auth_links').delete().eq('student_id', studentId)
-  await admin.from('students').delete().eq('id', studentId)
+  await admin.from('students').update({ is_enrolled: false }).eq('id', studentId)
 
   if (link?.auth_uid) {
     await admin.auth.admin.deleteUser(link.auth_uid)
