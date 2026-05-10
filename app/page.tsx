@@ -16,37 +16,47 @@ function addDays(dateStr: string, days: number): string {
 }
 
 export default async function Home() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  // 環境変数のみで判定できる場合はDBクエリ不要
-  const envAdminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
-    .split(',').map(s => s.trim()).filter(Boolean)
-  if (envAdminUids.includes(user.id)) redirect('/admin')
-
-  // adminsテーブル確認 と authLink取得 を並列実行
   const adminClient = createAdminClient()
-  const [{ data: adminRecord }, { data: authLink }, { data: pendingAdmin }] = await Promise.all([
-    adminClient.from('admins').select('auth_uid').eq('auth_uid', user.id).maybeSingle(),
-    supabase.from('student_auth_links').select('student_id').eq('auth_uid', user.id).single(),
-    adminClient.from('pending_admins').select('auth_uid').eq('auth_uid', user.id).maybeSingle(),
-  ])
+  let studentId: string
 
-  if (adminRecord) redirect('/admin')
-  if (!authLink) {
-    if (pendingAdmin) redirect('/pending')
-    redirect('/onboarding')
+  // 開発プレビュー用バイパス（.env.local の DEV_PREVIEW_STUDENT_ID が設定されている場合のみ）
+  const devStudentId = process.env.NODE_ENV === 'development'
+    ? process.env.DEV_PREVIEW_STUDENT_ID
+    : undefined
+
+  if (devStudentId) {
+    studentId = devStudentId
+  } else {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) redirect('/login')
+
+    const envAdminUids = (process.env.ADMIN_AUTH_UIDS ?? '')
+      .split(',').map(s => s.trim()).filter(Boolean)
+    if (envAdminUids.includes(user.id)) redirect('/admin')
+
+    const [{ data: adminRecord }, { data: authLink }, { data: pendingAdmin }] = await Promise.all([
+      adminClient.from('admins').select('auth_uid').eq('auth_uid', user.id).maybeSingle(),
+      supabase.from('student_auth_links').select('student_id').eq('auth_uid', user.id).single(),
+      adminClient.from('pending_admins').select('auth_uid').eq('auth_uid', user.id).maybeSingle(),
+    ])
+
+    if (adminRecord) redirect('/admin')
+    if (!authLink) {
+      if (pendingAdmin) redirect('/pending')
+      redirect('/onboarding')
+    }
+
+    studentId = authLink.student_id
   }
 
   const today = getJSTToday()
   const endDate = addDays(today, 14)
 
-  // 寮生情報 と 申告データ を並列取得
   const [{ data: student }, { data: declarations }] = await Promise.all([
-    supabase.from('students').select('name, dormitory').eq('id', authLink.student_id).single(),
-    supabase.from('meal_declarations').select('date, breakfast, dinner')
-      .eq('student_id', authLink.student_id)
+    adminClient.from('students').select('name, dormitory').eq('id', studentId).single(),
+    adminClient.from('meal_declarations').select('date, breakfast, dinner')
+      .eq('student_id', studentId)
       .gte('date', today)
       .lte('date', endDate),
   ])
@@ -90,7 +100,7 @@ export default async function Home() {
         </div>
 
         <MealCalendar
-          studentId={authLink.student_id}
+          studentId={studentId}
           declarations={declarationMap}
           today={today}
         />
