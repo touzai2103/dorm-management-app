@@ -62,37 +62,14 @@ export default function InstallPage() {
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <SectionHeader bgClass="bg-gray-800" icon={<AppleIcon />} title="iPhone / iPad" />
 
-            {/* Safari */}
-            <div className="px-4 pt-4 pb-3">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-bold bg-blue-100 text-blue-700 rounded-full px-2.5 py-0.5">Safari（推奨）</span>
-              </div>
+            <div className="px-4 py-4">
               <div className="space-y-3">
-                <Step number={1} text="Safariでこのページを開く" />
+                <Step number={1} text="このページをブラウザで開く" />
                 <Step number={2} text="画面右下の「…」（三点リーダー）をタップ" />
                 <Step number={3} text="共有ボタン（四角から上矢印が出たアイコン）をタップ" />
                 <Step number={4} text="「表示を増やす」をタップ" />
                 <Step number={5} text="「ホーム画面に追加」をタップ" />
                 <Step number={6} text="右上の「追加」をタップして完了" />
-              </div>
-            </div>
-
-            <div className="mx-4 border-t border-gray-100" />
-
-            {/* Chrome on iOS */}
-            <div className="px-4 pt-3 pb-4">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-bold bg-gray-100 text-gray-600 rounded-full px-2.5 py-0.5">Chrome</span>
-              </div>
-              <div className="space-y-3">
-                <Step number={1} text="Chromeでこのページを開く" />
-                <Step number={2} text="上部アドレスバーの右端にある共有ボタン（四角から上矢印が出たアイコン）をタップ" />
-                <Step number={3} text="メニューの「表示を増やす」をタップ" />
-                <Step number={4} text="「ホーム画面に追加」を選択" />
-                <Step number={5} text="右上の「追加」をタップして完了" />
-              </div>
-              <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
-                <p className="text-xs text-amber-700">⚠️ iPhoneのChromeはSafariに比べてPWA機能の一部が制限される場合があります。フル機能を使うにはSafariを推奨します。</p>
               </div>
             </div>
           </div>
