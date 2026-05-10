@@ -353,6 +353,7 @@ export async function adminUpsertMealDeclaration(
         original_value: currentValue,
         changed_to: newValue,
         changed_by_name: adminName,
+        changed_by_auth_uid: user.id,
       })
     }
   }

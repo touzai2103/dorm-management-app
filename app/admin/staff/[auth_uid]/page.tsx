@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import StaffEditForm from './StaffEditForm'
+import StaffChangeLog from '@/app/components/StaffChangeLog'
 
 export default async function StaffDetailPage({
   params,
@@ -29,11 +30,19 @@ export default async function StaffDetailPage({
     : (dbAdmins?.find(a => a.auth_uid === user.id)?.role ?? 'admin')
   const isCurrentUserViewer = currentUserRole === 'viewer'
 
-  const { data: staff } = await adminClient
-    .from('admins')
-    .select('auth_uid, name, furigana, phone, role')
-    .eq('auth_uid', auth_uid)
-    .single()
+  const [{ data: staff }, { data: changeLogs }] = await Promise.all([
+    adminClient
+      .from('admins')
+      .select('auth_uid, name, furigana, phone, role')
+      .eq('auth_uid', auth_uid)
+      .single(),
+    adminClient
+      .from('meal_change_logs')
+      .select('id, date, meal, changed_to, changed_at, students(name)')
+      .eq('changed_by_auth_uid', auth_uid)
+      .order('changed_at', { ascending: false })
+      .limit(50),
+  ])
 
   if (!staff || !staff.name) notFound()
 
@@ -103,6 +112,14 @@ export default async function StaffDetailPage({
               }}
               isViewer={isCurrentUserViewer}
             />
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+              <span className="text-sm font-bold text-gray-700">代理変更履歴</span>
+              <span className="text-xs text-gray-400 ml-2">直近50件</span>
+            </div>
+            <StaffChangeLog logs={changeLogs ?? []} />
           </div>
         </div>
       </div>
