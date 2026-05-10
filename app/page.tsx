@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { redirect } from 'next/navigation'
 import { signOut } from '@/app/actions/auth'
+import Link from 'next/link'
 import MealCalendar from '@/app/components/MealCalendar'
 import JSTClock from '@/app/components/JSTClock'
 
@@ -99,10 +100,20 @@ export default async function Home() {
           </div>
         </header>
 
-        <div className="px-4 py-3 bg-blue-50 border-b border-blue-100">
+        <div className="px-4 py-3 bg-blue-50 border-b border-blue-100 flex items-center justify-between gap-3">
           <p className="text-xs text-blue-700">
             締切は2日前の0時です。締切後は変更できません。
           </p>
+          <Link
+            href="/install"
+            className="shrink-0 flex items-center gap-1 text-xs text-blue-600 border border-blue-300 rounded-lg px-2.5 py-1 hover:bg-blue-100 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+              <path d="M8 16.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z" />
+              <path fillRule="evenodd" d="M4 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4Zm2-.5a.5.5 0 0 0-.5.5v12a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5V4a.5.5 0 0 0-.5-.5H6Z" clipRule="evenodd" />
+            </svg>
+            ホーム画面に追加
+          </Link>
         </div>
 
         <MealCalendar
