@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import StudentEditForm from './StudentEditForm'
 import AdminMealCalendar from '@/app/components/AdminMealCalendar'
+import AdminChangeLog from '@/app/components/AdminChangeLog'
 
 function getJSTToday(): string {
   const jst = new Date(Date.now() + 9 * 60 * 60 * 1000)
@@ -54,7 +55,7 @@ export default async function StudentDetailPage({
   const today = getJSTToday()
   const endDate = addDays(today, 14)
 
-  const [{ data: student }, { data: declarations }, { data: allStudents }] = await Promise.all([
+  const [{ data: student }, { data: declarations }, { data: allStudents }, { data: changeLogs }] = await Promise.all([
     adminClient
       .from('students')
       .select('id, name, furigana, phone, dormitory, enrollment_year, club, room_number')
@@ -72,6 +73,12 @@ export default async function StudentDetailPage({
       .order('dormitory', { ascending: true })
       .order('enrollment_year', { ascending: true })
       .order('furigana', { ascending: true }),
+    adminClient
+      .from('meal_declarations')
+      .select('date, breakfast, dinner, updated_by_name, updated_at')
+      .eq('student_id', id)
+      .not('updated_by_name', 'is', null)
+      .order('date', { ascending: false }),
   ])
 
   if (!student) notFound()
@@ -163,6 +170,14 @@ export default async function StudentDetailPage({
               today={today}
               readOnly={isCurrentUserViewer}
             />
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+              <span className="text-sm font-bold text-gray-700">代理変更履歴</span>
+              <span className="text-xs text-gray-400 ml-2">管理者による変更のみ記録</span>
+            </div>
+            <AdminChangeLog logs={changeLogs ?? []} />
           </div>
         </div>
       </div>

@@ -38,7 +38,7 @@ export async function upsertMealDeclaration(
   const { error } = await admin
     .from('meal_declarations')
     .upsert(
-      { student_id: studentId, date, breakfast, dinner, updated_at: new Date().toISOString() },
+      { student_id: studentId, date, breakfast, dinner, updated_at: new Date().toISOString(), updated_by_name: null },
       { onConflict: 'student_id,date' }
     )
 

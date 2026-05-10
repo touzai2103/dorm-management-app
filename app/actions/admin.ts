@@ -283,11 +283,26 @@ export async function adminUpsertMealDeclaration(
   breakfast: boolean,
   dinner: boolean
 ): Promise<void> {
-  if (!(await checkAdmin())) return
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  const { isAdmin } = await import('@/utils/isAdmin')
+  if (!(await isAdmin(user.id))) return
 
   const admin = createAdminClient()
+
+  const envAdminUids = (process.env.ADMIN_AUTH_UIDS ?? '').split(',').map(s => s.trim()).filter(Boolean)
+  let updatedByName: string
+  if (envAdminUids.includes(user.id)) {
+    updatedByName = 'スーパー管理者'
+  } else {
+    const { data } = await admin.from('admins').select('name').eq('auth_uid', user.id).maybeSingle()
+    updatedByName = data?.name ?? '管理者'
+  }
+
   await admin.from('meal_declarations').upsert(
-    { student_id: studentId, date, breakfast, dinner, updated_at: new Date().toISOString() },
+    { student_id: studentId, date, breakfast, dinner, updated_at: new Date().toISOString(), updated_by_name: updatedByName },
     { onConflict: 'student_id,date' }
   )
 
