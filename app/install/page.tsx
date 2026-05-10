@@ -84,9 +84,10 @@ export default function InstallPage() {
               </div>
               <div className="space-y-3">
                 <Step number={1} text="Chromeでこのページを開く" />
-                <Step number={2} text="右下の「…」（メニュー）をタップ" />
-                <Step number={3} text="「ホーム画面に追加」を選択" />
-                <Step number={4} text="右上の「追加」をタップして完了" />
+                <Step number={2} text="上部アドレスバーの右端にある共有ボタン（四角から上矢印が出たアイコン）をタップ" />
+                <Step number={3} text="メニューの「表示を増やす」をタップ" />
+                <Step number={4} text="「ホーム画面に追加」を選択" />
+                <Step number={5} text="右上の「追加」をタップして完了" />
               </div>
               <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
                 <p className="text-xs text-amber-700">⚠️ iPhoneのChromeはSafariに比べてPWA機能の一部が制限される場合があります。フル機能を使うにはSafariを推奨します。</p>
