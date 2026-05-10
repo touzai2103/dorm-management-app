@@ -60,6 +60,20 @@ type Student = {
   room_number: string | null
 }
 
+function PhoneCallButton({ phone }: { phone: string }) {
+  return (
+    <a
+      href={`tel:${phone}`}
+      className="flex items-center gap-1 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-xs font-medium px-2.5 py-1 rounded-full transition-colors"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+        <path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 0 1 3.5 2h1.148a1.5 1.5 0 0 1 1.465 1.175l.716 3.223a1.5 1.5 0 0 1-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 0 0 6.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 0 1 1.767-1.052l3.223.716A1.5 1.5 0 0 1 18 16.352V17.5a1.5 1.5 0 0 1-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 0 1 2.43 8.326 13.019 13.019 0 0 1 2 5V3.5Z" clipRule="evenodd" />
+      </svg>
+      架電
+    </a>
+  )
+}
+
 function Field({
   label,
   name,
@@ -70,6 +84,7 @@ function Field({
   hint,
   error,
   required = true,
+  callLink,
 }: {
   label: string
   name: string
@@ -80,14 +95,18 @@ function Field({
   hint?: string
   error?: string
   required?: boolean
+  callLink?: string
 }) {
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
-        {label}
-        {required && <span className="text-red-500 ml-0.5">*</span>}
-        {!required && <span className="text-gray-400 text-xs ml-1">（任意）</span>}
-      </label>
+      <div className="flex items-center justify-between mb-1">
+        <label htmlFor={name} className="text-sm font-medium text-gray-700">
+          {label}
+          {required && <span className="text-red-500 ml-0.5">*</span>}
+          {!required && <span className="text-gray-400 text-xs ml-1">（任意）</span>}
+        </label>
+        {callLink && <PhoneCallButton phone={callLink} />}
+      </div>
       {hint && <p className="mb-1 text-xs text-gray-400">{hint}</p>}
       <input
         id={name}
@@ -198,6 +217,7 @@ function StudentEditFormInner({
             placeholder="09012345678"
             hint="ハイフン不要"
             error={errors?.phone}
+            callLink={student.phone}
           />
           <div>
             <label htmlFor="dormitory" className="block text-sm font-medium text-gray-700 mb-1">
