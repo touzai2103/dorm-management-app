@@ -119,12 +119,12 @@ export default async function StudentDetailPage({
                 )
               })()}
             </div>
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-3 shrink-0">
               {prevStudent ? (
                 <Link
                   href={`/admin/students/${prevStudent.id}`}
                   title={prevStudent.name}
-                  className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300 active:bg-gray-400 transition-colors"
+                  className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white hover:bg-gray-700 active:bg-gray-600 transition-colors"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                     <path fillRule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clipRule="evenodd" />
@@ -141,7 +141,7 @@ export default async function StudentDetailPage({
                 <Link
                   href={`/admin/students/${nextStudent.id}`}
                   title={nextStudent.name}
-                  className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300 active:bg-gray-400 transition-colors"
+                  className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white hover:bg-gray-700 active:bg-gray-600 transition-colors"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                     <path fillRule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
