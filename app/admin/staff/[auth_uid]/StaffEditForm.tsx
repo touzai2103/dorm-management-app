@@ -218,7 +218,7 @@ function StaffEditFormInner({
           className={`w-full rounded-xl py-3 text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
             saved
               ? 'bg-green-600 text-white'
-              : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
+              : 'border border-blue-400 text-blue-600 hover:bg-blue-50 active:bg-blue-100'
           }`}
         >
           {pending ? '更新中...' : saved ? '✓ 更新しました' : '更新する'}
@@ -252,7 +252,7 @@ function StaffEditFormInner({
             type="button"
             onClick={handleDelete}
             disabled={deletePending}
-            className="w-full bg-red-600 text-white rounded-xl py-3 text-sm font-medium hover:bg-red-700 active:bg-red-800 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            className="w-full border border-red-300 text-red-600 rounded-xl py-3 text-sm font-medium hover:bg-red-50 active:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           >
             {deletePending ? '削除中...' : 'このスタッフを削除する'}
           </button>
