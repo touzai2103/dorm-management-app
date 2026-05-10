@@ -16,6 +16,14 @@ function addDays(dateStr: string, days: number): string {
   return date.toISOString().split('T')[0]
 }
 
+function calcGrade(enrollmentYear: number): number {
+  const jst = new Date(Date.now() + 9 * 60 * 60 * 1000)
+  const month = jst.getUTCMonth() + 1
+  const year = jst.getUTCFullYear()
+  const academicYear = month >= 4 ? year : year - 1
+  return academicYear - enrollmentYear + 1
+}
+
 export default async function StudentDetailPage({
   params,
 }: {
@@ -89,7 +97,12 @@ export default async function StudentDetailPage({
               </svg>
               <span className="text-sm font-medium">一覧</span>
             </Link>
-            <h1 className="text-base font-bold text-gray-900 flex-1 truncate">{student.name}</h1>
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <h1 className="text-base font-bold text-gray-900 truncate">{student.name}</h1>
+              <span className="text-xs bg-blue-100 text-blue-700 rounded-full px-2 py-0.5 font-medium shrink-0">
+                {calcGrade(student.enrollment_year)}年生
+              </span>
+            </div>
             <div className="flex items-center gap-1 shrink-0">
               {prevStudent ? (
                 <Link
