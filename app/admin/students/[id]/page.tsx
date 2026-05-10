@@ -114,7 +114,7 @@ export default async function StudentDetailPage({
                   'bg-red-100 text-red-700'
                 return (
                   <span className={`text-xs rounded-full px-1.5 py-px font-medium shrink-0 ${color}`}>
-                    {grade}年
+                    {grade}年生
                   </span>
                 )
               })()}
