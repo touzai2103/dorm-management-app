@@ -69,9 +69,11 @@ export default function InstallPage() {
               </div>
               <div className="space-y-3">
                 <Step number={1} text="Safariでこのページを開く" />
-                <Step number={2} text="画面下部中央の共有ボタン（四角から上矢印が出たアイコン）をタップ" />
-                <Step number={3} text="メニューをスクロールして「ホーム画面に追加」を選択" />
-                <Step number={4} text="右上の「追加」をタップして完了" />
+                <Step number={2} text="画面右下の「…」（三点リーダー）をタップ" />
+                <Step number={3} text="共有ボタン（四角から上矢印が出たアイコン）をタップ" />
+                <Step number={4} text="「表示を増やす」をタップ" />
+                <Step number={5} text="「ホーム画面に追加」をタップ" />
+                <Step number={6} text="右上の「追加」をタップして完了" />
               </div>
             </div>
 
