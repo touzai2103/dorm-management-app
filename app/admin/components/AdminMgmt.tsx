@@ -192,7 +192,6 @@ export default function AdminMgmt({
                   className="px-4 py-3 flex items-center justify-between group hover:bg-white/50 transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-800">{a.name ?? '（氏名不明）'}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                       a.role === 'admin'
                         ? 'bg-blue-100 text-blue-700'
@@ -200,6 +199,7 @@ export default function AdminMgmt({
                     }`}>
                       {a.role === 'admin' ? '管理者' : '閲覧者'}
                     </span>
+                    <span className="text-sm text-gray-800">{a.name ?? '（氏名不明）'}</span>
                   </div>
                   <span className="flex items-center gap-1 text-xs text-blue-600 transition-colors group-hover:text-blue-800">
                     管理
