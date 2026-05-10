@@ -62,14 +62,30 @@ export default function InstallPage() {
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
             <SectionHeader bgClass="bg-gray-800" icon={<AppleIcon />} title="iPhone / iPad" />
 
-            <div className="px-4 py-4">
+            {/* Safari */}
+            <div className="px-4 pt-4 pb-3">
+              <p className="text-xs font-bold text-gray-500 mb-3">Safari の場合</p>
               <div className="space-y-3">
-                <Step number={1} text="このページをブラウザで開く" />
+                <Step number={1} text="Safariでこのページを開く" />
                 <Step number={2} text="画面右下の「…」（三点リーダー）をタップ" />
                 <Step number={3} text="共有ボタン（四角から上矢印が出たアイコン）をタップ" />
                 <Step number={4} text="「表示を増やす」をタップ" />
                 <Step number={5} text="「ホーム画面に追加」をタップ" />
                 <Step number={6} text="右上の「追加」をタップして完了" />
+              </div>
+            </div>
+
+            <div className="mx-4 border-t border-gray-100" />
+
+            {/* Chrome on iOS */}
+            <div className="px-4 pt-3 pb-4">
+              <p className="text-xs font-bold text-gray-500 mb-3">Chrome の場合</p>
+              <div className="space-y-3">
+                <Step number={1} text="Chromeでこのページを開く" />
+                <Step number={2} text="上部アドレスバーの右端にある共有ボタン（四角から上矢印が出たアイコン）をタップ" />
+                <Step number={3} text="「表示を増やす」をタップ" />
+                <Step number={4} text="「ホーム画面に追加」をタップ" />
+                <Step number={5} text="右上の「追加」をタップして完了" />
               </div>
             </div>
           </div>
