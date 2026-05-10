@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 
 import { updateStudent, deleteStudent, type UpdateStudentState } from '@/app/actions/admin'
 
-const CLUB_OPTIONS = ['無所属', '野球部', '男子バレー部', '女子バレー部', '男子バスケ部', '女子バスケ部', '弓道部', '剣道部']
+const CLUB_OPTIONS = ['無所属', '野球部', '男子バレー部', '女子バレー部', '男子バスケ部', '女子バスケ部', '弓道部', '剣道部', '教師']
 
 type ModalConfig = {
   title: string
@@ -55,7 +55,7 @@ type Student = {
   furigana: string
   phone: string
   dormitory: string
-  enrollment_year: number
+  enrollment_year: number | null
   club: string
   room_number: string | null
 }
@@ -140,6 +140,8 @@ function StudentEditFormInner({
   const [errors, setErrors] = useState<NonNullable<UpdateStudentState>['errors']>(undefined)
   const [saved, setSaved] = useState(false)
   const [modal, setModal] = useState<ModalConfig | null>(null)
+  const [selectedClub, setSelectedClub] = useState(student.club)
+  const isTeacher = selectedClub === '教師'
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -242,29 +244,6 @@ function StudentEditFormInner({
             )}
           </div>
           <div>
-            <label htmlFor="enrollment_year" className="block text-sm font-medium text-gray-700 mb-1">
-              入学年度<span className="text-red-500 ml-0.5">*</span>
-            </label>
-            <select
-              id="enrollment_year"
-              name="enrollment_year"
-              required
-              defaultValue={student.enrollment_year}
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                errors?.enrollment_year
-                  ? 'border-red-400 focus:ring-red-400'
-                  : 'border-gray-300 focus:ring-blue-500'
-              }`}
-            >
-              {enrollmentYears.map(y => (
-                <option key={y} value={y}>{y}年度</option>
-              ))}
-            </select>
-            {errors?.enrollment_year && (
-              <p className="mt-1 text-xs text-red-600">{errors.enrollment_year}</p>
-            )}
-          </div>
-          <div>
             <label htmlFor="club" className="block text-sm font-medium text-gray-700 mb-1">
               部活<span className="text-red-500 ml-0.5">*</span>
             </label>
@@ -273,6 +252,7 @@ function StudentEditFormInner({
               name="club"
               required
               defaultValue={student.club}
+              onChange={e => setSelectedClub(e.target.value)}
               className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
                 errors?.club
                   ? 'border-red-400 focus:ring-red-400'
@@ -287,6 +267,31 @@ function StudentEditFormInner({
               <p className="mt-1 text-xs text-red-600">{errors.club}</p>
             )}
           </div>
+          {!isTeacher && (
+            <div>
+              <label htmlFor="enrollment_year" className="block text-sm font-medium text-gray-700 mb-1">
+                入学年度<span className="text-red-500 ml-0.5">*</span>
+              </label>
+              <select
+                id="enrollment_year"
+                name="enrollment_year"
+                required
+                defaultValue={student.enrollment_year ?? ''}
+                className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
+                  errors?.enrollment_year
+                    ? 'border-red-400 focus:ring-red-400'
+                    : 'border-gray-300 focus:ring-blue-500'
+                }`}
+              >
+                {enrollmentYears.map(y => (
+                  <option key={y} value={y}>{y}年度</option>
+                ))}
+              </select>
+              {errors?.enrollment_year && (
+                <p className="mt-1 text-xs text-red-600">{errors.enrollment_year}</p>
+              )}
+            </div>
+          )}
           <Field
             label="部屋番号"
             name="room_number"

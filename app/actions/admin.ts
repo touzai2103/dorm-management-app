@@ -80,16 +80,19 @@ export async function updateStudent(
     errors.dormitory = '正しい所属寮を選択してください'
   }
 
-  const enrollmentYear = parseInt(enrollmentYearStr, 10)
-  if (!enrollmentYearStr) {
-    errors.enrollment_year = '入学年度を選択してください'
-  } else if (isNaN(enrollmentYear) || enrollmentYear < 2000 || enrollmentYear > currentYear + 1) {
-    errors.enrollment_year = '正しい入学年度を選択してください'
-  }
-
-  const VALID_CLUBS = ['無所属', '野球部', '男子バレー部', '女子バレー部', '男子バスケ部', '女子バスケ部', '弓道部', '剣道部']
+  const VALID_CLUBS = ['無所属', '野球部', '男子バレー部', '女子バレー部', '男子バスケ部', '女子バスケ部', '弓道部', '剣道部', '教師']
   if (!club || !VALID_CLUBS.includes(club)) {
     errors.club = '部活を選択してください'
+  }
+
+  const isTeacher = club === '教師'
+  const enrollmentYear = isTeacher ? null : parseInt(enrollmentYearStr, 10)
+  if (!isTeacher) {
+    if (!enrollmentYearStr) {
+      errors.enrollment_year = '入学年度を選択してください'
+    } else if (isNaN(enrollmentYear as number) || (enrollmentYear as number) < 2000 || (enrollmentYear as number) > currentYear + 1) {
+      errors.enrollment_year = '正しい入学年度を選択してください'
+    }
   }
 
   if (Object.keys(errors).length > 0) return { errors }
@@ -102,7 +105,7 @@ export async function updateStudent(
       furigana,
       phone,
       dormitory,
-      enrollment_year: enrollmentYear,
+      enrollment_year: enrollmentYear ?? null,
       club,
       room_number: roomNumber,
     })

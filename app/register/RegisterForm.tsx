@@ -1,9 +1,9 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { registerStudent, type RegisterState } from '@/app/actions/register'
 
-const CLUB_OPTIONS = ['無所属', '野球部', '男子バレー部', '女子バレー部', '男子バスケ部', '女子バスケ部', '弓道部', '剣道部']
+const CLUB_OPTIONS = ['無所属', '野球部', '男子バレー部', '女子バレー部', '男子バスケ部', '女子バスケ部', '弓道部', '剣道部', '教師']
 
 const currentYear = new Date().getFullYear()
 const enrollmentYears = Array.from({ length: 6 }, (_, i) => currentYear - 4 + i).reverse()
@@ -57,6 +57,8 @@ export default function RegisterForm() {
     registerStudent,
     null
   )
+  const [selectedClub, setSelectedClub] = useState('')
+  const isTeacher = selectedClub === '教師'
 
   return (
     <form action={action} className="space-y-4">
@@ -110,38 +112,6 @@ export default function RegisterForm() {
       </div>
 
       <div>
-        <label
-          htmlFor="enrollment_year"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          入学年度<span className="text-red-500 ml-0.5">*</span>
-        </label>
-        <select
-          id="enrollment_year"
-          name="enrollment_year"
-          required
-          defaultValue=""
-          className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors ${
-            state?.errors?.enrollment_year
-              ? 'border-red-400 focus:ring-red-400'
-              : 'border-gray-300 focus:ring-blue-500'
-          }`}
-        >
-          <option value="" disabled>
-            選択してください
-          </option>
-          {enrollmentYears.map(y => (
-            <option key={y} value={y}>
-              {y}年度
-            </option>
-          ))}
-        </select>
-        {state?.errors?.enrollment_year && (
-          <p className="mt-1 text-xs text-red-600">{state.errors.enrollment_year}</p>
-        )}
-      </div>
-
-      <div>
         <label htmlFor="club" className="block text-sm font-medium text-gray-700 mb-1">
           部活<span className="text-red-500 ml-0.5">*</span>
         </label>
@@ -150,6 +120,7 @@ export default function RegisterForm() {
           name="club"
           required
           defaultValue=""
+          onChange={e => setSelectedClub(e.target.value)}
           className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors ${
             state?.errors?.club
               ? 'border-red-400 focus:ring-red-400'
@@ -165,6 +136,40 @@ export default function RegisterForm() {
           <p className="mt-1 text-xs text-red-600">{state.errors.club}</p>
         )}
       </div>
+
+      {!isTeacher && (
+        <div>
+          <label
+            htmlFor="enrollment_year"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            入学年度<span className="text-red-500 ml-0.5">*</span>
+          </label>
+          <select
+            id="enrollment_year"
+            name="enrollment_year"
+            required
+            defaultValue=""
+            className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors ${
+              state?.errors?.enrollment_year
+                ? 'border-red-400 focus:ring-red-400'
+                : 'border-gray-300 focus:ring-blue-500'
+            }`}
+          >
+            <option value="" disabled>
+              選択してください
+            </option>
+            {enrollmentYears.map(y => (
+              <option key={y} value={y}>
+                {y}年度
+              </option>
+            ))}
+          </select>
+          {state?.errors?.enrollment_year && (
+            <p className="mt-1 text-xs text-red-600">{state.errors.enrollment_year}</p>
+          )}
+        </div>
+      )}
 
       <button
         type="submit"
