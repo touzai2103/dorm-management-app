@@ -304,7 +304,7 @@ function StudentEditFormInner({
           className={`w-full rounded-xl py-3 text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
             saved
               ? 'bg-green-600 text-white'
-              : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
+              : 'border border-blue-400 text-blue-600 hover:bg-blue-50 active:bg-blue-100'
           }`}
         >
           {pending ? '更新中...' : saved ? '✓ 更新しました' : '更新する'}
