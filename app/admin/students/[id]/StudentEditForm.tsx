@@ -243,17 +243,21 @@ function StudentEditFormInner({
     <form onSubmit={e => e.preventDefault()} className="space-y-4">
       <input type="hidden" name="student_id" value={student.id} />
 
-      <div className="h-5 flex items-center justify-end">
-        {saveStatus === 'saving' && (
+      {saveStatus === 'saving' && (
+        <div className="flex justify-end">
           <span className="text-xs text-gray-400">保存中...</span>
-        )}
-        {saveStatus === 'saved' && (
+        </div>
+      )}
+      {saveStatus === 'saved' && (
+        <div className="flex justify-end">
           <span className="text-xs text-green-600">保存済み ✓</span>
-        )}
-        {saveStatus === 'error' && Object.keys(errors).length === 0 && (
+        </div>
+      )}
+      {saveStatus === 'error' && Object.keys(errors).length === 0 && (
+        <div className="flex justify-end">
           <span className="text-xs text-red-600">保存に失敗しました</span>
-        )}
-      </div>
+        </div>
+      )}
 
       {isViewer && (
         <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-500">

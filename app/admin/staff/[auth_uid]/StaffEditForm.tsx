@@ -1,13 +1,15 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useTransition, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import {
   updateStaff,
   updateAdminRole,
   removeAdmin,
   type UpdateStaffState,
 } from '@/app/actions/admin'
+
+type FieldErrors = NonNullable<NonNullable<UpdateStaffState>['errors']>
 
 type ModalConfig = {
   title: string
@@ -18,7 +20,7 @@ type ModalConfig = {
 }
 
 function Modal({ config, onClose }: { config: ModalConfig; onClose: () => void }) {
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
@@ -45,7 +47,8 @@ function Modal({ config, onClose }: { config: ModalConfig; onClose: () => void }
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -56,6 +59,14 @@ type Staff = {
   phone: string
   role: 'admin' | 'viewer'
 }
+
+type FieldValues = {
+  name: string
+  furigana: string
+  phone: string
+}
+
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 const ROLE_OPTIONS: { value: 'admin' | 'viewer'; label: string }[] = [
   { value: 'viewer', label: '閲覧者' },
@@ -69,31 +80,58 @@ function StaffEditFormInner({
   staff: Staff
   isViewer: boolean
 }) {
-  const router = useRouter()
-  const [pending, startUpdate] = useTransition()
+  const [values, setValues] = useState<FieldValues>({
+    name: staff.name,
+    furigana: staff.furigana,
+    phone: staff.phone,
+  })
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [errors, setErrors] = useState<FieldErrors>({})
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const [rolePending, startRole] = useTransition()
   const [deletePending, startDelete] = useTransition()
-  const [errors, setErrors] = useState<NonNullable<UpdateStaffState>['errors']>(undefined)
-  const [saved, setSaved] = useState(false)
   const [roleError, setRoleError] = useState<string | null>(null)
   const [modal, setModal] = useState<ModalConfig | null>(null)
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    startUpdate(async () => {
-      const result = await updateStaff(null, formData)
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+    }
+  }, [])
+
+  function scheduleAutosave(next: FieldValues) {
+    if (isViewer) return
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+    setSaveStatus('idle')
+
+    debounceRef.current = setTimeout(async () => {
+      setSaveStatus('saving')
+      const fd = new FormData()
+      fd.set('auth_uid', staff.auth_uid)
+      fd.set('name', next.name)
+      fd.set('furigana', next.furigana)
+      fd.set('phone', next.phone)
+
+      const result = await updateStaff(null, fd)
       if (result?.success) {
-        setErrors(undefined)
-        setSaved(true)
-        setTimeout(() => {
-          setSaved(false)
-          router.refresh()
-        }, 2500)
+        setSaveStatus('saved')
+        setErrors({})
+        savedTimerRef.current = setTimeout(() => setSaveStatus('idle'), 2500)
       } else {
-        setErrors(result?.errors)
+        setSaveStatus('error')
+        setErrors(result?.errors ?? {})
       }
-    })
+    }, 800)
+  }
+
+  function handleChange(field: keyof FieldValues, value: string) {
+    const next = { ...values, [field]: value }
+    setValues(next)
+    scheduleAutosave(next)
   }
 
   function handleSetRole(role: 'admin' | 'viewer') {
@@ -108,7 +146,6 @@ function StaffEditFormInner({
         startRole(async () => {
           const result = await updateAdminRole(staff.auth_uid, role)
           if (result?.error) setRoleError(result.error)
-          else router.refresh()
         })
       },
     })
@@ -136,9 +173,30 @@ function StaffEditFormInner({
     })
   }
 
+  const inputClass = (hasError?: string) =>
+    `w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
+      hasError ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
+    }`
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={e => e.preventDefault()} className="space-y-4">
       <input type="hidden" name="auth_uid" value={staff.auth_uid} />
+
+      {saveStatus === 'saving' && (
+        <div className="flex justify-end">
+          <span className="text-xs text-gray-400">保存中...</span>
+        </div>
+      )}
+      {saveStatus === 'saved' && (
+        <div className="flex justify-end">
+          <span className="text-xs text-green-600">保存済み ✓</span>
+        </div>
+      )}
+      {saveStatus === 'error' && Object.keys(errors).length === 0 && (
+        <div className="flex justify-end">
+          <span className="text-xs text-red-600">保存に失敗しました</span>
+        </div>
+      )}
 
       {isViewer && (
         <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-500">
@@ -155,14 +213,13 @@ function StaffEditFormInner({
             <p className="mb-1 text-xs text-gray-400">姓と名の間に半角スペースを入力してください</p>
             <input
               id="name" name="name" type="text"
-              defaultValue={staff.name}
+              value={values.name}
+              onChange={e => handleChange('name', e.target.value)}
               placeholder="山田 太郎"
               required
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                errors?.name ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
-              }`}
+              className={inputClass(errors.name)}
             />
-            {errors?.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
+            {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
           </div>
 
           <div>
@@ -171,14 +228,13 @@ function StaffEditFormInner({
             </label>
             <input
               id="furigana" name="furigana" type="text"
-              defaultValue={staff.furigana}
+              value={values.furigana}
+              onChange={e => handleChange('furigana', e.target.value)}
               placeholder="やまだ たろう"
               required
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                errors?.furigana ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
-              }`}
+              className={inputClass(errors.furigana)}
             />
-            {errors?.furigana && <p className="mt-1 text-xs text-red-600">{errors.furigana}</p>}
+            {errors.furigana && <p className="mt-1 text-xs text-red-600">{errors.furigana}</p>}
           </div>
 
           <div>
@@ -187,7 +243,7 @@ function StaffEditFormInner({
                 携帯番号<span className="text-red-500 ml-0.5">*</span>
               </label>
               <a
-                href={`tel:${staff.phone}`}
+                href={`tel:${values.phone}`}
                 className="md:hidden flex items-center gap-1.5 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-sm font-medium px-5 py-2 rounded-full transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
@@ -199,31 +255,16 @@ function StaffEditFormInner({
             <p className="mb-1 text-xs text-gray-400">ハイフン不要</p>
             <input
               id="phone" name="phone" type="tel" inputMode="tel"
-              defaultValue={staff.phone}
+              value={values.phone}
+              onChange={e => handleChange('phone', e.target.value)}
               placeholder="09012345678"
               required
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                errors?.phone ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
-              }`}
+              className={inputClass(errors.phone)}
             />
-            {errors?.phone && <p className="mt-1 text-xs text-red-600">{errors.phone}</p>}
+            {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone}</p>}
           </div>
         </div>
       </fieldset>
-
-      {!isViewer && (
-        <button
-          type="submit"
-          disabled={pending || saved}
-          className={`w-full rounded-xl py-3 text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
-            saved
-              ? 'bg-green-600 text-white'
-              : 'border border-blue-400 text-blue-600 hover:bg-blue-50 active:bg-blue-100'
-          }`}
-        >
-          {pending ? '更新中...' : saved ? '✓ 更新しました' : '更新する'}
-        </button>
-      )}
 
       <div className="border-t border-gray-100 pt-4 space-y-3">
         <div className="flex gap-2">
