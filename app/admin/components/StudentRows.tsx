@@ -9,12 +9,10 @@ export default function StudentRows({
   students,
   declMap,
   dates,
-  today,
 }: {
   students: { id: string; name: string }[]
   declMap: DeclRecord
   dates: string[]
-  today?: string
 }) {
   const router = useRouter()
   const [navigatingId, setNavigatingId] = useState<string | null>(null)
@@ -47,9 +45,8 @@ export default function StudentRows({
             </td>
             {dates.map(date => {
               const decl = declMap[`${s.id}:${date}`]
-              const isToday = today !== undefined && date === today
               return (
-                <td key={date} className={`border-r border-gray-100 p-0 text-center ${isToday ? 'bg-blue-50/40' : ''}`}>
+                <td key={date} className="border-r border-gray-100 p-0 text-center">
                   <div className="flex justify-center items-center w-full py-2 text-base">
                     <span className={`flex-1 text-center ${decl?.breakfast ? 'text-red-500' : 'text-gray-300'}`}>
                       {decl?.breakfast ? '●' : '✕'}

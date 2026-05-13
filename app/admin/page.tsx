@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import AdminMgmt from './components/AdminMgmt'
@@ -7,8 +6,6 @@ import StudentRows from './components/StudentRows'
 import AddToHomeButton from '@/app/components/AddToHomeButton'
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土']
-const DAY_RANGE = 15
-const MAX_OFFSET = 90
 
 function getJSTToday(): string {
   const jst = new Date(Date.now() + 9 * 60 * 60 * 1000)
@@ -28,21 +25,16 @@ function formatDateLabel(dateStr: string) {
   return { short: `${m}/${d}`, dow }
 }
 
-export default async function AdminPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ offset?: string }>
-}) {
+export default async function AdminPage() {
   const supabase = await createClient()
   const adminClient = createAdminClient()
 
-  const [{ data: { user } }, { data: dbAdmins }, { data: pendingAdmins }, resolvedParams] = await Promise.all([
+  const [{ data: { user } }, { data: dbAdmins }, { data: pendingAdmins }] = await Promise.all([
     supabase.auth.getUser(),
     adminClient.from('admins').select('auth_uid, name, furigana, role'),
     adminClient.from('pending_admins')
       .select('auth_uid, name, furigana, phone, requested_at')
       .order('requested_at', { ascending: true }),
-    searchParams,
   ])
   if (!user) redirect('/login')
 
@@ -57,16 +49,9 @@ export default async function AdminPage({
     !envAdminUids.includes(user.id) &&
     dbAdmins?.find(a => a.auth_uid === user.id)?.role === 'viewer'
 
-  const rawOffset = parseInt(resolvedParams.offset ?? '0', 10)
-  const offset = isNaN(rawOffset) ? 0 : Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, rawOffset))
-
   const today = getJSTToday()
-  const startDate = addDays(today, offset)
-  const dates = Array.from({ length: DAY_RANGE }, (_, i) => addDays(startDate, i))
+  const dates = Array.from({ length: 15 }, (_, i) => addDays(today, i))
   const endDate = dates[dates.length - 1]
-
-  const prevOffset = Math.max(-MAX_OFFSET, offset - DAY_RANGE)
-  const nextOffset = Math.min(MAX_OFFSET, offset + DAY_RANGE)
 
   const [{ data: students }, { data: declarations }] = await Promise.all([
     adminClient
@@ -78,7 +63,7 @@ export default async function AdminPage({
     adminClient
       .from('meal_declarations')
       .select('student_id, date, breakfast, dinner')
-      .gte('date', startDate)
+      .gte('date', today)
       .lte('date', endDate),
   ])
 
@@ -106,75 +91,30 @@ export default async function AdminPage({
     { name: '男子寮', students: maleDorm },
   ]
 
-  const { short: startShort } = formatDateLabel(startDate)
-  const { short: endShort } = formatDateLabel(endDate)
-
   return (
     <div className="min-h-screen bg-[#a9b4ba] animate-page-in">
-      <header className="bg-[#ebe7df] border-b border-[#d5cfc7] sticky top-0 z-20">
-        <div className="px-4 py-3 flex items-center">
-          <div className="flex items-center gap-2">
-            <h1 className="text-base font-bold text-gray-900">スタッフ用画面</h1>
-            {(pendingAdmins?.length ?? 0) > 0 && (
-              <span className="text-xs bg-amber-500 text-white rounded-full px-2 py-0.5 font-medium">
-                {pendingAdmins!.length}件承認待ち
-              </span>
-            )}
-          </div>
-          <div className="ml-auto flex items-center gap-2">
-            <AddToHomeButton />
-            <a
-              href="/api/admin/csv"
-              className="text-xs text-blue-600 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50 transition-colors"
-            >
-              CSV出力
-            </a>
-          </div>
+      <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-0 z-20 flex items-center">
+        <div className="flex items-center gap-2">
+          <h1 className="text-base font-bold text-gray-900">スタッフ用画面</h1>
+          {(pendingAdmins?.length ?? 0) > 0 && (
+            <span className="text-xs bg-amber-500 text-white rounded-full px-2 py-0.5 font-medium">
+              {pendingAdmins!.length}件承認待ち
+            </span>
+          )}
         </div>
-
-        <div className="px-4 py-2 border-t border-[#d5cfc7]/60 flex items-center gap-2">
-          {offset > -MAX_OFFSET ? (
-            <Link
-              href={`/admin?offset=${prevOffset}`}
-              className="text-xs text-gray-600 border border-gray-300 rounded-lg px-2.5 py-1 hover:bg-white/60 transition-colors"
-            >
-              ← 前へ
-            </Link>
-          ) : (
-            <span className="text-xs text-gray-300 border border-gray-200 rounded-lg px-2.5 py-1">← 前へ</span>
-          )}
-
-          <span className="flex-1 text-center text-xs text-gray-600">
-            {startShort} 〜 {endShort}
-            {offset !== 0 && (
-              <span className="text-gray-400">（今日: {formatDateLabel(today).short}）</span>
-            )}
-          </span>
-
-          {offset !== 0 && (
-            <Link
-              href="/admin"
-              className="text-xs text-blue-600 border border-blue-200 rounded-lg px-2.5 py-1 hover:bg-blue-50 transition-colors"
-            >
-              今日
-            </Link>
-          )}
-
-          {offset < MAX_OFFSET ? (
-            <Link
-              href={`/admin?offset=${nextOffset}`}
-              className="text-xs text-gray-600 border border-gray-300 rounded-lg px-2.5 py-1 hover:bg-white/60 transition-colors"
-            >
-              次へ →
-            </Link>
-          ) : (
-            <span className="text-xs text-gray-300 border border-gray-200 rounded-lg px-2.5 py-1">次へ →</span>
-          )}
+        <div className="ml-auto flex items-center gap-2">
+          <AddToHomeButton />
+          <a
+            href="/api/admin/csv"
+            className="text-xs text-blue-600 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50 transition-colors"
+          >
+            CSV出力
+          </a>
         </div>
       </header>
 
       <div className="px-4 pt-6 pb-4 space-y-6">
-        {/* モバイルのみ表示：今日・明日のサマリー（常に今日基準） */}
+        {/* モバイルのみ表示：今日・明日のサマリー */}
         <div className="md:hidden grid grid-cols-2 gap-3">
           {[today, addDays(today, 1)].map((date, i) => {
             const { short, dow } = formatDateLabel(date)
@@ -232,16 +172,11 @@ export default async function AdminPage({
                     {dates.map(date => {
                       const { short, dow } = formatDateLabel(date)
                       const isWeekend = dow === '土' || dow === '日'
-                      const isToday = date === today
                       return (
                         <th
                           key={date}
                           className={`border-b border-r border-gray-100 px-1 py-1.5 text-center font-medium min-w-[52px] ${
-                            isToday
-                              ? 'bg-blue-50 text-blue-600'
-                              : isWeekend
-                              ? 'text-blue-400'
-                              : 'text-gray-500'
+                            isWeekend ? 'text-blue-400' : 'text-gray-500'
                           }`}
                         >
                           <div className="font-bold text-sm">{short}</div>
@@ -262,9 +197,8 @@ export default async function AdminPage({
                     {dates.map(date => {
                       const bf = dStudents.filter(s => declMap.get(`${s.id}:${date}`)?.breakfast).length
                       const dn = dStudents.filter(s => declMap.get(`${s.id}:${date}`)?.dinner).length
-                      const isToday = date === today
                       return (
-                        <td key={date} className={`border-r border-gray-200 p-0 text-center ${isToday ? 'bg-blue-50/60' : ''}`}>
+                        <td key={date} className="border-r border-gray-200 p-0 text-center">
                           <div className="flex justify-center items-center w-full py-2 text-base">
                             <span className={`flex-1 text-center ${bf > 0 ? 'text-gray-800 font-bold' : 'text-gray-400'}`}>{bf}</span>
                             <span className="text-gray-300">|</span>
@@ -278,7 +212,6 @@ export default async function AdminPage({
                     students={dStudents}
                     declMap={declRecord}
                     dates={dates}
-                    today={today}
                   />
                 </tbody>
               </table>
