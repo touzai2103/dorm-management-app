@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { useRouter } from 'next/navigation'
-
 import { updateStudent, deleteStudent, type UpdateStudentState } from '@/app/actions/admin'
 
+type FieldErrors = NonNullable<NonNullable<UpdateStudentState>['errors']>
+
 const CLUB_OPTIONS = ['無所属', '野球部', '男子バレー部', '女子バレー部', '男子バスケ部', '女子バスケ部', '弓道部', '剣道部', '教師']
+const enrollmentYears = Array.from({ length: 4 }, (_, i) => new Date().getFullYear() - i)
 
 type ModalConfig = {
   title: string
@@ -49,8 +50,6 @@ function Modal({ config, onClose }: { config: ModalConfig; onClose: () => void }
   )
 }
 
-const enrollmentYears = Array.from({ length: 4 }, (_, i) => new Date().getFullYear() - i)
-
 type Student = {
   id: string
   name: string
@@ -61,6 +60,18 @@ type Student = {
   club: string
   room_number: string | null
 }
+
+type FieldValues = {
+  name: string
+  furigana: string
+  phone: string
+  dormitory: string
+  club: string
+  enrollmentYear: string
+  roomNumber: string
+}
+
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 function PhoneCallButton({ phone }: { phone: string }) {
   return (
@@ -79,7 +90,8 @@ function PhoneCallButton({ phone }: { phone: string }) {
 function Field({
   label,
   name,
-  defaultValue,
+  value,
+  onChange,
   type = 'text',
   placeholder,
   inputMode,
@@ -90,7 +102,8 @@ function Field({
 }: {
   label: string
   name: string
-  defaultValue?: string
+  value: string
+  onChange: (v: string) => void
   type?: string
   placeholder?: string
   inputMode?: React.InputHTMLAttributes<HTMLInputElement>['inputMode']
@@ -116,7 +129,8 @@ function Field({
         type={type}
         inputMode={inputMode}
         placeholder={placeholder}
-        defaultValue={defaultValue ?? ''}
+        value={value}
+        onChange={e => onChange(e.target.value)}
         required={required}
         className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
           error
@@ -136,31 +150,66 @@ function StudentEditFormInner({
   student: Student
   isViewer: boolean
 }) {
-  const router = useRouter()
-  const [pending, startUpdate] = useTransition()
-  const [deleting, startDelete] = useTransition()
-  const [errors, setErrors] = useState<NonNullable<UpdateStudentState>['errors']>(undefined)
-  const [saved, setSaved] = useState(false)
-  const [modal, setModal] = useState<ModalConfig | null>(null)
-  const [selectedClub, setSelectedClub] = useState(student.club)
-  const isTeacher = selectedClub === '教師'
+  const [values, setValues] = useState<FieldValues>({
+    name: student.name,
+    furigana: student.furigana,
+    phone: student.phone,
+    dormitory: student.dormitory,
+    club: student.club,
+    enrollmentYear: student.enrollment_year != null ? String(student.enrollment_year) : String(new Date().getFullYear()),
+    roomNumber: student.room_number ?? '',
+  })
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [errors, setErrors] = useState<FieldErrors>({})
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    startUpdate(async () => {
-      const result = await updateStudent(null, formData)
+  const [deleting, startDelete] = useTransition()
+  const [modal, setModal] = useState<ModalConfig | null>(null)
+
+  const isTeacher = values.club === '教師'
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+    }
+  }, [])
+
+  function scheduleAutosave(next: FieldValues) {
+    if (isViewer) return
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+    setSaveStatus('idle')
+
+    debounceRef.current = setTimeout(async () => {
+      setSaveStatus('saving')
+      const fd = new FormData()
+      fd.set('student_id', student.id)
+      fd.set('name', next.name)
+      fd.set('furigana', next.furigana)
+      fd.set('phone', next.phone)
+      fd.set('dormitory', next.dormitory)
+      fd.set('club', next.club)
+      fd.set('enrollment_year', next.enrollmentYear)
+      fd.set('room_number', next.roomNumber)
+
+      const result = await updateStudent(null, fd)
       if (result?.success) {
-        setErrors(undefined)
-        setSaved(true)
-        setTimeout(() => {
-          setSaved(false)
-          router.refresh()
-        }, 2500)
+        setSaveStatus('saved')
+        setErrors({})
+        savedTimerRef.current = setTimeout(() => setSaveStatus('idle'), 2500)
       } else {
-        setErrors(result?.errors)
+        setSaveStatus('error')
+        setErrors(result?.errors ?? {})
       }
-    })
+    }, 800)
+  }
+
+  function handleChange(field: keyof FieldValues, value: string) {
+    const next = { ...values, [field]: value }
+    setValues(next)
+    scheduleAutosave(next)
   }
 
   function handleDelete() {
@@ -185,9 +234,26 @@ function StudentEditFormInner({
     })
   }
 
+  const selectClass = (hasError?: string) =>
+    `w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
+      hasError ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'
+    }`
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={e => e.preventDefault()} className="space-y-4">
       <input type="hidden" name="student_id" value={student.id} />
+
+      <div className="h-5 flex items-center justify-end">
+        {saveStatus === 'saving' && (
+          <span className="text-xs text-gray-400">保存中...</span>
+        )}
+        {saveStatus === 'saved' && (
+          <span className="text-xs text-green-600">保存済み ✓</span>
+        )}
+        {saveStatus === 'error' && Object.keys(errors).length === 0 && (
+          <span className="text-xs text-red-600">保存に失敗しました</span>
+        )}
+      </div>
 
       {isViewer && (
         <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-500">
@@ -200,28 +266,31 @@ function StudentEditFormInner({
           <Field
             label="氏名"
             name="name"
-            defaultValue={student.name}
+            value={values.name}
+            onChange={v => handleChange('name', v)}
             placeholder="山田 太郎"
             hint="姓と名の間に半角スペースを入力してください"
-            error={errors?.name}
+            error={errors.name}
           />
           <Field
             label="ふりがな"
             name="furigana"
-            defaultValue={student.furigana}
+            value={values.furigana}
+            onChange={v => handleChange('furigana', v)}
             placeholder="やまだ たろう"
-            error={errors?.furigana}
+            error={errors.furigana}
           />
           <Field
             label="携帯番号"
             name="phone"
             type="tel"
             inputMode="tel"
-            defaultValue={student.phone}
+            value={values.phone}
+            onChange={v => handleChange('phone', v)}
             placeholder="09012345678"
             hint="ハイフン不要"
-            error={errors?.phone}
-            callLink={student.phone}
+            error={errors.phone}
+            callLink={values.phone}
           />
           <div>
             <label htmlFor="dormitory" className="block text-sm font-medium text-gray-700 mb-1">
@@ -231,17 +300,14 @@ function StudentEditFormInner({
               id="dormitory"
               name="dormitory"
               required
-              defaultValue={student.dormitory}
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                errors?.dormitory
-                  ? 'border-red-400 focus:ring-red-400'
-                  : 'border-gray-300 focus:ring-blue-500'
-              }`}
+              value={values.dormitory}
+              onChange={e => handleChange('dormitory', e.target.value)}
+              className={selectClass(errors.dormitory)}
             >
               <option value="男子寮">男子寮</option>
               <option value="女子寮">女子寮</option>
             </select>
-            {errors?.dormitory && (
+            {errors.dormitory && (
               <p className="mt-1 text-xs text-red-600">{errors.dormitory}</p>
             )}
           </div>
@@ -253,19 +319,15 @@ function StudentEditFormInner({
               id="club"
               name="club"
               required
-              defaultValue={student.club}
-              onChange={e => setSelectedClub(e.target.value)}
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                errors?.club
-                  ? 'border-red-400 focus:ring-red-400'
-                  : 'border-gray-300 focus:ring-blue-500'
-              }`}
+              value={values.club}
+              onChange={e => handleChange('club', e.target.value)}
+              className={selectClass(errors.club)}
             >
               {CLUB_OPTIONS.map(c => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
-            {errors?.club && (
+            {errors.club && (
               <p className="mt-1 text-xs text-red-600">{errors.club}</p>
             )}
           </div>
@@ -278,18 +340,15 @@ function StudentEditFormInner({
                 id="enrollment_year"
                 name="enrollment_year"
                 required
-                defaultValue={student.enrollment_year ?? ''}
-                className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 transition-colors disabled:bg-gray-50 disabled:text-gray-500 ${
-                  errors?.enrollment_year
-                    ? 'border-red-400 focus:ring-red-400'
-                    : 'border-gray-300 focus:ring-blue-500'
-                }`}
+                value={values.enrollmentYear}
+                onChange={e => handleChange('enrollmentYear', e.target.value)}
+                className={selectClass(errors.enrollment_year)}
               >
                 {enrollmentYears.map(y => (
                   <option key={y} value={y}>{y}年度</option>
                 ))}
               </select>
-              {errors?.enrollment_year && (
+              {errors.enrollment_year && (
                 <p className="mt-1 text-xs text-red-600">{errors.enrollment_year}</p>
               )}
             </div>
@@ -297,26 +356,13 @@ function StudentEditFormInner({
           <Field
             label="部屋番号"
             name="room_number"
-            defaultValue={student.room_number ?? ''}
+            value={values.roomNumber}
+            onChange={v => handleChange('roomNumber', v)}
             required={false}
-            error={errors?.room_number}
+            error={errors.room_number}
           />
         </div>
       </fieldset>
-
-      {!isViewer && (
-        <button
-          type="submit"
-          disabled={pending || saved}
-          className={`w-full rounded-xl py-3 text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
-            saved
-              ? 'bg-green-600 text-white'
-              : 'border border-blue-400 text-blue-600 hover:bg-blue-50 active:bg-blue-100'
-          }`}
-        >
-          {pending ? '更新中...' : saved ? '✓ 更新しました' : '更新する'}
-        </button>
-      )}
 
       {!isViewer && (
         <div className="border-t border-gray-100 pt-4">
