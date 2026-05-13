@@ -293,7 +293,7 @@ function StaffEditFormInner({
             type="button"
             onClick={handleDelete}
             disabled={deletePending}
-            className="w-full border border-red-300 text-red-600 rounded-xl py-3 text-sm font-medium hover:bg-red-50 active:bg-red-100 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            className="w-full bg-red-600 text-white rounded-xl py-3 text-sm font-medium hover:bg-red-700 active:bg-red-800 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           >
             {deletePending ? '削除中...' : 'このスタッフを削除する'}
           </button>
