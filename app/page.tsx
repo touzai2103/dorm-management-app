@@ -87,7 +87,14 @@ export default async function Home() {
             <div className="flex justify-center">
               <JSTClock />
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end items-center gap-2">
+              <a
+                href="/guide/student"
+                className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-300 text-gray-500 hover:bg-gray-100 transition-colors text-sm font-bold"
+                aria-label="使い方ガイド"
+              >
+                ?
+              </a>
               <form action={signOut}>
                 <button
                   type="submit"
@@ -102,7 +109,7 @@ export default async function Home() {
 
         <div className="px-4 py-3 bg-blue-50 border-b border-blue-100 flex items-center justify-between gap-3">
           <p className="text-xs text-blue-700">
-            締切は2日前の0時です。締切後は変更できません。
+            締切は2日前の0時です。<br></br>締切後は変更できません。
           </p>
           <AddToHomeButton variant="student" />
         </div>
