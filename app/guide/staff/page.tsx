@@ -46,6 +46,9 @@ export default function StaffGuidePage() {
           <p className="text-xs text-gray-500 leading-relaxed">
             ※ アンバー色のセルは生徒がまだアプリを操作していない日です。スタッフが状況確認の際の目安にしてください。
           </p>
+          <p className="text-xs text-gray-500 leading-relaxed">
+            ※ 生徒の申告はボタンをタップした時点で自動保存されます。保存ボタンはありません。
+          </p>
         </Section>
 
         <Section title="合計行">

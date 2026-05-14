@@ -105,7 +105,7 @@ export default async function AdminPage() {
         <div className="ml-auto flex items-center gap-2">
           <a
             href="/guide/staff"
-            className="w-7 h-7 flex items-center justify-center rounded-full border border-gray-300 text-gray-500 hover:bg-gray-100 transition-colors text-sm font-bold"
+            className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-700 text-white hover:bg-gray-900 transition-colors text-sm font-bold"
             aria-label="使い方ガイド"
           >
             ?
