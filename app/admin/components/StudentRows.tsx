@@ -49,11 +49,11 @@ export default function StudentRows({
               return (
                 <td key={date} className={`border-r border-gray-100 p-0 text-center ${neverTouched ? 'bg-amber-200' : ''}`}>
                   <div className="flex justify-center items-center w-full py-2 text-base">
-                    <span className={`flex-1 text-center ${decl?.breakfast ? 'text-red-500' : 'text-gray-300'}`}>
+                    <span className={`flex-1 text-center ${decl?.breakfast ? 'text-red-500' : 'text-gray-500'}`}>
                       {decl?.breakfast ? '●' : '✕'}
                     </span>
                     <span className="text-gray-300">|</span>
-                    <span className={`flex-1 text-center ${decl?.dinner ? 'text-red-500' : 'text-gray-300'}`}>
+                    <span className={`flex-1 text-center ${decl?.dinner ? 'text-red-500' : 'text-gray-500'}`}>
                       {decl?.dinner ? '●' : '✕'}
                     </span>
                   </div>
