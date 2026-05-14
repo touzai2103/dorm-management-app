@@ -47,7 +47,7 @@ export default function StudentRows({
               const decl = declMap[`${s.id}:${date}`]
               const neverTouched = decl === undefined
               return (
-                <td key={date} className={`border-r border-gray-100 p-0 text-center ${neverTouched ? 'bg-amber-50' : ''}`}>
+                <td key={date} className={`border-r border-gray-100 p-0 text-center ${neverTouched ? 'bg-amber-200' : ''}`}>
                   <div className="flex justify-center items-center w-full py-2 text-base">
                     <span className={`flex-1 text-center ${decl?.breakfast ? 'text-red-500' : 'text-gray-300'}`}>
                       {decl?.breakfast ? '●' : '✕'}
