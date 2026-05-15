@@ -52,7 +52,7 @@ export default function AddToHomeButton({ variant = 'admin' }: { variant?: 'admi
   return (
     <button
       onClick={handleClick}
-      className="flex items-center gap-1 text-xs text-gray-500 border border-gray-300 rounded-lg px-2.5 py-1.5 hover:bg-gray-50 transition-colors"
+      className="flex items-center gap-1 text-xs text-gray-600 border border-gray-400 rounded-full px-3 py-1.5 hover:border-gray-600 hover:text-gray-800 hover:bg-gray-100 active:scale-95 active:bg-gray-200 transition-all"
     >
       <SmartphoneIcon className="w-3.5 h-3.5" />
       ホーム画面に追加
