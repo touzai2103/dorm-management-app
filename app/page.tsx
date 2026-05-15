@@ -75,35 +75,28 @@ export default async function Home() {
     <div className="min-h-screen bg-gray-50 animate-page-in">
       <div className="max-w-lg mx-auto">
         <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-0 z-10">
-          <div className="grid grid-cols-3 items-center">
-            <div>
-              <h1 className="text-base font-bold text-gray-900">食事申告</h1>
-              {student && (
-                <p className="text-xs text-gray-500">
-                  {student.name} · {student.dormitory}
-                </p>
-              )}
-            </div>
-            <div className="flex justify-center">
-              <JSTClock />
-            </div>
-            <div className="flex justify-end items-center gap-2">
-              <a
-                href="/guide/student"
-                className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-700 text-white hover:bg-gray-900 transition-colors text-sm font-bold"
-                aria-label="使い方ガイド"
+          <div className="flex items-center justify-between">
+            {student && (
+              <p className="text-sm font-medium text-gray-700">
+                {student.name} · {student.dormitory}
+              </p>
+            )}
+            <a
+              href="/guide/student"
+              className="rounded-full border border-gray-400 px-3 py-1.5 text-xs text-gray-600 hover:border-gray-600 hover:text-gray-800 hover:bg-gray-100 active:scale-95 active:bg-gray-200 transition-all"
+              aria-label="使い方ガイド"
+            >
+              使い方ガイド
+            </a>
+            <JSTClock />
+            <form action={signOut}>
+              <button
+                type="submit"
+                className="rounded-full border border-gray-400 px-3 py-1.5 text-xs text-gray-600 hover:border-gray-600 hover:text-gray-800 hover:bg-gray-100 active:scale-95 active:bg-gray-200 transition-all"
               >
-                ?
-              </a>
-              <form action={signOut}>
-                <button
-                  type="submit"
-                  className="text-xs text-gray-600 hover:text-gray-800 border border-gray-400 hover:border-gray-600 rounded-lg px-3 py-1.5 transition-colors"
-                >
-                  ログアウト
-                </button>
-              </form>
-            </div>
+                ログアウト
+              </button>
+            </form>
           </div>
         </header>
 

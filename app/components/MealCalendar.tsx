@@ -88,7 +88,7 @@ export default function MealCalendar({ studentId, declarations, today }: Props) 
     }
     const id = setTimeout(() => router.refresh(), msUntilJSTMidnight())
     return () => clearTimeout(id)
-  }, [])
+  }, [router])
 
   function handleToggle(date: string, meal: 'breakfast' | 'dinner') {
     const current = state[date] ?? { breakfast: false, dinner: false }

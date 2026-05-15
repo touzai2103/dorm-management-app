@@ -105,15 +105,15 @@ export default async function AdminPage() {
         <div className="ml-auto flex items-center gap-2">
           <a
             href="/guide/staff"
-            className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-700 text-white hover:bg-gray-900 transition-colors text-sm font-bold"
+            className="rounded-full border border-gray-400 px-3 py-1.5 text-xs text-gray-600 hover:border-gray-600 hover:text-gray-800 hover:bg-gray-100 active:scale-95 active:bg-gray-200 transition-all"
             aria-label="使い方ガイド"
           >
-            ?
+            使い方ガイド
           </a>
           <AddToHomeButton />
           <a
             href="/api/admin/csv"
-            className="text-xs text-blue-600 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50 transition-colors"
+            className="hidden md:block rounded-full border border-gray-400 px-3 py-1.5 text-xs text-gray-600 hover:border-gray-600 hover:text-gray-800 hover:bg-gray-100 active:scale-95 active:bg-gray-200 transition-all"
           >
             CSV出力
           </a>
