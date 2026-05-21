@@ -95,7 +95,6 @@ export default async function AdminPage() {
     <div className="min-h-screen bg-[#a9b4ba] animate-page-in">
       <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-0 z-20 flex items-center gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <h1 className="text-base font-bold text-gray-900 truncate">スタッフ用画面</h1>
           {(pendingAdmins?.length ?? 0) > 0 && (
             <span className="text-xs bg-amber-500 text-white rounded-full px-2 py-0.5 font-medium shrink-0">
               {pendingAdmins!.length}件承認待ち
