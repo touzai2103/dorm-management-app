@@ -93,16 +93,16 @@ export default async function AdminPage() {
 
   return (
     <div className="min-h-screen bg-[#a9b4ba] animate-page-in">
-      <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-0 z-20 flex items-center">
-        <div className="flex items-center gap-2">
-          <h1 className="text-base font-bold text-gray-900">スタッフ用画面</h1>
+      <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-0 z-20 flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <h1 className="text-base font-bold text-gray-900 truncate">スタッフ用画面</h1>
           {(pendingAdmins?.length ?? 0) > 0 && (
-            <span className="text-xs bg-amber-500 text-white rounded-full px-2 py-0.5 font-medium">
+            <span className="text-xs bg-amber-500 text-white rounded-full px-2 py-0.5 font-medium shrink-0">
               {pendingAdmins!.length}件承認待ち
             </span>
           )}
         </div>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <a
             href="/guide/staff"
             className="rounded-full border border-gray-400 px-3 py-1.5 text-xs text-gray-600 hover:border-gray-600 hover:text-gray-800 hover:bg-gray-100 active:scale-95 active:bg-gray-200 transition-all"

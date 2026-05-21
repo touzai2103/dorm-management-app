@@ -75,21 +75,23 @@ export default async function Home() {
     <div className="min-h-screen bg-gray-50 animate-page-in">
       <div className="max-w-lg mx-auto">
         <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-0 z-10">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
             {student && (
-              <p className="text-sm font-medium text-gray-700">
+              <p className="text-sm font-medium text-gray-700 flex-1 min-w-0 truncate">
                 {student.name} · {student.dormitory}
               </p>
             )}
             <a
               href="/guide/student"
-              className="rounded-full border border-gray-400 px-3 py-1.5 text-xs text-gray-600 hover:border-gray-600 hover:text-gray-800 hover:bg-gray-100 active:scale-95 active:bg-gray-200 transition-all"
+              className="shrink-0 rounded-full border border-gray-400 px-3 py-1.5 text-xs text-gray-600 hover:border-gray-600 hover:text-gray-800 hover:bg-gray-100 active:scale-95 active:bg-gray-200 transition-all"
               aria-label="使い方ガイド"
             >
               使い方ガイド
             </a>
-            <JSTClock />
-            <form action={signOut}>
+            <div className="shrink-0">
+              <JSTClock />
+            </div>
+            <form action={signOut} className="shrink-0">
               <button
                 type="submit"
                 className="rounded-full border border-gray-400 px-3 py-1.5 text-xs text-gray-600 hover:border-gray-600 hover:text-gray-800 hover:bg-gray-100 active:scale-95 active:bg-gray-200 transition-all"

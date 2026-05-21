@@ -55,13 +55,13 @@ function Toggle({
     >
       <span className="text-xs text-gray-500">{label}</span>
       <div
-        className={`relative w-14 h-7 rounded-full transition-colors duration-200 cursor-pointer ${
+        className={`relative w-12 h-6 rounded-full transition-colors duration-200 cursor-pointer ${
           value ? 'bg-green-500' : 'bg-gray-200'
         }`}
       >
         <span
-          className={`absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-sm transition-all duration-200 ${
-            value ? 'left-7' : 'left-0.5'
+          className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-all duration-200 ${
+            value ? 'left-6' : 'left-0.5'
           }`}
         />
       </div>
@@ -102,9 +102,9 @@ export default function AdminMealCalendar({ studentId, declarations, today, read
         return (
           <div
             key={date}
-            className={`px-4 py-3 ${rowBg} flex items-center justify-between`}
+            className={`px-4 py-3 ${rowBg} flex flex-wrap items-center gap-x-4 gap-y-2`}
           >
-            <div className="w-24 shrink-0">
+            <div className="flex-1 min-w-[72px]">
               <div className={`text-xl font-bold ${dateColor}`}>
                 {mmdd}
                 <span>({dayOfWeek})</span>
@@ -120,18 +120,20 @@ export default function AdminMealCalendar({ studentId, declarations, today, read
                 )}
               </div>
             </div>
-            <Toggle
-              label="朝食"
-              value={decl.breakfast}
-              onChange={() => handleToggle(date, 'breakfast')}
-              disabled={readOnly}
-            />
-            <Toggle
-              label="夕食"
-              value={decl.dinner}
-              onChange={() => handleToggle(date, 'dinner')}
-              disabled={readOnly}
-            />
+            <div className="flex gap-4 shrink-0">
+              <Toggle
+                label="朝食"
+                value={decl.breakfast}
+                onChange={() => handleToggle(date, 'breakfast')}
+                disabled={readOnly}
+              />
+              <Toggle
+                label="夕食"
+                value={decl.dinner}
+                onChange={() => handleToggle(date, 'dinner')}
+                disabled={readOnly}
+              />
+            </div>
           </div>
         )
       })}
