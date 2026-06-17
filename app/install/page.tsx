@@ -37,12 +37,20 @@ const AndroidIcon = () => (
 export default function InstallPage() {
   const router = useRouter()
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back()
+    } else {
+      router.replace('/')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-lg mx-auto">
         <header className="bg-[#ebe7df] border-b border-[#d5cfc7] px-4 py-3 sticky top-0 z-10 flex items-center gap-3">
           <button
-            onClick={() => router.back()}
+            onClick={handleBack}
             className="flex items-center gap-1 text-gray-400 hover:text-gray-700 transition-colors shrink-0"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">

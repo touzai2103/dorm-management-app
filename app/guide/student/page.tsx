@@ -1,5 +1,15 @@
 import Link from 'next/link'
 
+const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土']
+
+function deadlineExample() {
+  const jstNow = new Date(Date.now() + 9 * 60 * 60 * 1000)
+  const target = new Date(Date.UTC(jstNow.getUTCFullYear(), jstNow.getUTCMonth(), jstNow.getUTCDate() + 4))
+  const deadline = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth(), target.getUTCDate() - 2))
+  const fmt = (d: Date) => `${d.getUTCMonth() + 1}月${d.getUTCDate()}日（${WEEKDAYS[d.getUTCDay()]}）`
+  return `例：${fmt(target)}の食事は、${fmt(deadline)}の0時が締切です。`
+}
+
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className="bg-white rounded-2xl shadow-sm p-5 space-y-3">
     <h2 className="text-sm font-bold text-gray-800">{title}</h2>
@@ -42,7 +52,7 @@ export default function StudentGuidePage() {
             締切を過ぎた日はグレーアウトされ、変更できなくなります。
           </p>
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 leading-relaxed">
-            例：5月15日（木）の食事は、5月13日（火）の0時が締切です。
+            {deadlineExample()}
           </div>
           <p className="text-sm text-gray-700 leading-relaxed">
             締切後にどうしても変更が必要な場合は、<span className="font-bold text-gray-900">グループLINEでスタッフに申請</span>してください。

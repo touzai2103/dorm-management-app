@@ -118,7 +118,7 @@ export default function MealCalendar({ studentId, declarations, today }: Props) 
             className={`px-4 py-3 ${rowBg} flex flex-wrap items-center gap-x-4 gap-y-2 ${past ? 'opacity-50' : ''}`}
           >
             <div className="flex-1 min-w-[72px]">
-              <div className={`text-xl font-bold ${dateColor}`}>
+              <div className={`text-xl font-bold whitespace-nowrap ${dateColor}`}>
                 {mmdd}
                 <span>({dayOfWeek})</span>
               </div>

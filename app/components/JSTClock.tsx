@@ -2,30 +2,26 @@
 
 import { useState, useEffect } from 'react'
 
-function getJSTParts() {
+function getJSTString() {
   const now = new Date(Date.now() + 9 * 60 * 60 * 1000)
-  return {
-    hm: `${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')}`,
-    s: String(now.getUTCSeconds()).padStart(2, '0'),
-  }
+  const hh = String(now.getUTCHours()).padStart(2, '0')
+  const mm = String(now.getUTCMinutes()).padStart(2, '0')
+  const ss = String(now.getUTCSeconds()).padStart(2, '0')
+  return `${hh}:${mm}:${ss}`
 }
 
 export default function JSTClock() {
-  const [parts, setParts] = useState(getJSTParts)
+  const [text, setText] = useState(getJSTString)
 
   useEffect(() => {
-    const id = setInterval(() => setParts(getJSTParts()), 1000)
+    const id = setInterval(() => setText(getJSTString()), 1000)
     return () => clearInterval(id)
   }, [])
 
   return (
-    <div className="flex items-center bg-gray-900 rounded-2xl px-3.5 py-1.5 shadow-md">
-      <span className="font-mono text-xl font-bold tabular-nums tracking-tight text-white leading-none">
-        {parts.hm}
-      </span>
-      <span className="font-mono text-sm font-bold tabular-nums text-gray-400 leading-none ml-0.5">
-        :{parts.s}
-      </span>
+    <div className="shrink-0 flex flex-col items-end gap-0.5">
+      <span className="text-[10px] font-medium text-blue-400 tracking-wide">現在時刻</span>
+      <span className="font-mono text-2xl font-bold text-blue-900 tabular-nums tracking-wide">{text}</span>
     </div>
   )
 }
